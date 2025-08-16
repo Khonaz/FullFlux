@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftStaff - Last-Minute Event Staffing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Modern Styling with Dark Mode & Glassmorphism --- */
+        :root {
+            --primary-color-dark: #588a4a;
+            --primary-color: #6fa25d;
+            --primary-color-light: #8ac07a;
+            --gradient-main: linear-gradient(135deg, #6fa25d 0%, #588a4a 100%);
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --warning-color: #FFC107;
+            
+            --bg-color: #f0f2f5;
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e9e9e9' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --modal-bg: rgba(255, 255, 255, 0.65);
+            --font-color: #1a202c;
+            --font-color-muted: #5a6578;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --border-radius: 12px;
+            --backdrop-blur: blur(10px);
+        }
+
+        body.dark-mode {
+            --primary-color-dark: #8ac07a;
+            --primary-color: #6fa25d;
+            --primary-color-light: #588a4a;
+            --gradient-main: linear-gradient(135deg, #8ac07a 0%, #6fa25d 100%);
+            --success-color: #66BB6A;
+            --danger-color: #EF5350;
+            --warning-color: #FFCA28;
+
+            --bg-color: #1a202c;
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232d3748' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            --card-bg: rgba(45, 55, 72, 0.75);
+            --modal-bg: rgba(45, 55, 72, 0.65);
+            --font-color: #edf2f7;
+            --font-color-muted: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            background-image: var(--bg-pattern);
+            color: var(--font-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 16px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        
+        /* --- Utility Classes --- */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .text-primary { color: var(--primary-color); }
+        .text-success { color: var(--success-color); }
+        .text-danger { color: var(--danger-color); }
+        .text-warning { color: var(--warning-color); }
+        .text-muted { color: var(--font-color-muted); }
+
+        /* --- Buttons & Forms --- */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            text-align: center;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .btn-primary { background: var(--gradient-main); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-secondary { background-color: #6c757d; }
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            box-shadow: none;
+        }
+        .btn-outline:hover { background-color: var(--primary-color); color: white; }
+        .btn-block { display: block; width: 100%; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background-color: rgba(255,255,255, 0.1);
+            color: var(--font-color);
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-color-light);
+            background-color: transparent;
+        }
+        body.dark-mode .form-control option {
+            background-color: var(--bg-color);
+            color: var(--font-color);
+        }
+
+
+        /* --- Header & Navigation --- */
+        .main-header {
+            background: rgba(0,0,0,0.1);
+            padding: 1rem 5%;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            position: sticky;
+            top: 0;
+            z-index: 500;
+        }
+        .main-header .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .main-nav { display: flex; align-items: center; gap: 0.5rem; }
+        .main-nav a, .main-nav button {
+            margin-left: 1rem;
+            text-decoration: none;
+            color: var(--font-color);
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .main-nav a:hover, .main-nav button:hover { color: var(--primary-color); }
+        .theme-toggle {
+            background: rgba(128,128,128,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .theme-toggle:hover { background: rgba(128,128,128,0.3); transform: rotate(15deg); }
+
+        /* --- Cards --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--border-color);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+        .card-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-title { font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--primary-color); }
+        .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+
+        /* --- Badges & Tags --- */
+        .badge {
+            display: inline-block;
+            padding: 0.4em 0.8em;
+            font-size: 80%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 20px;
+            color: white;
+        }
+        .badge-success { background-color: var(--success-color); }
+        .badge-warning { background-color: var(--warning-color); color: #333; }
+        .badge-info { background-color: #17a2b8; }
+        .badge-danger { background-color: var(--danger-color); }
+        .badge-primary { background: var(--gradient-main); }
+        .badge-secondary { background-color: #6c757d; }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: var(--modal-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slide-down 0.3s ease-out;
+            border: 1px solid var(--border-color);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;
+        }
+        .modal-title { margin: 0; font-size: 1.5rem; color: var(--primary-color); }
+        .close-button {
+            font-size: 1.5rem; font-weight: bold; border: none; background: none; cursor: pointer; color: var(--font-color-muted);
+        }
+        .close-button:hover { color: var(--font-color); }
+
+        @keyframes slide-down {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- Toasts / Notifications --- */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            background: var(--gradient-main);
+            color: white; padding: 1rem 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow);
+            opacity: 0; transform: translateX(20px); transition: opacity 0.3s, transform 0.3s;
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+
+        /* --- Specific Component Styles --- */
+        .countdown-timer { font-weight: bold; color: var(--danger-color); font-size: 1.1rem; }
+        #availability-toggle { padding: 0.5rem 1rem; font-size: 0.9rem; }
+        #wallet-balance { font-weight: bold; font-size: 1.2rem; color: var(--success-color); }
+        .rating-stars { font-size: 1.8rem; color: var(--font-color-muted); cursor: pointer; }
+        .rating-stars .star:hover,
+        .rating-stars .star.selected { color: var(--warning-color); }
+        
+        /* --- Skill Selection Accordion --- */
+        .skills-category {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .skills-category summary {
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            padding: 0.75rem 1rem;
+        }
+        .skills-category[open] {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .skills-category[open] summary {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .skills-category summary::marker {
+            color: var(--primary-color);
+        }
+        .skill-item {
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .skill-item input {
+            margin-right: 0.75rem;
+        }
+
+        /* --- Chat Modal --- */
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .chat-message {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            max-width: 75%;
+            word-wrap: break-word;
+        }
+        .chat-message.sent {
+            background: var(--gradient-main);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-message.received {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-message .timestamp {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 0.25rem;
+        }
+        #chat-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+        #chat-form input { flex-grow: 1; }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .container { width: 95%; margin: 1rem auto; }
+            .main-header { flex-direction: column; gap: 0.5rem; }
+            .main-nav { margin-top: 0.5rem; }
+            .job-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="logo">SwiftStaff</div>
+        <nav id="main-nav" class="main-nav">
+            <!-- Nav links will be populated by JS -->
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="app-root" class="container">
+        <!-- App content will be rendered here -->
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Templates for Dynamic Content -->
+    <template id="login-template">
+        <div class="card" style="max-width: 450px; margin: 2rem auto;">
+            <div class="card-header">
+                <h2 id="auth-title" class="card-title">Login</h2>
+            </div>
+            <form id="auth-form">
+                <div id="display-name-group" class="form-group hidden">
+                    <label for="displayName">Full Name</label>
+                    <input type="text" id="displayName" class="form-control" placeholder="e.g. Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" required placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required placeholder="Choose a secure password">
+                </div>
+                <div id="role-group" class="form-group hidden">
+                    <label>I am a...</label>
+                    <select id="role" class="form-control">
+                        <option value="freelancer">Freelancer (Worker)</option>
+                        <option value="client">Client (Organizer)</option>
+                    </select>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">Login</button>
+            </form>
+            <p class="text-center" style="margin-top: 1rem;">
+                <a href="#" id="auth-toggle-link">Don't have an account? Register</a>
+            </p>
+        </div>
+    </template>
+
+    <template id="job-card-template">
+        <div class="card job-card" data-job-id="">
+            <div class="card-header">
+                <h3 class="card-title job-title"></h3>
+                <span class="badge job-category"></span>
+            </div>
+            <div class="job-description"></div>
+            <p><strong>Budget:</strong> ZAR <span class="job-budget"></span></p>
+            <p><strong>Location:</strong> <span class="job-location"></span> (<span class="job-distance"></span> km away)</p>
+            <p><strong>Positions:</strong> <span class="job-positions"></span></p>
+            <p><strong>Status:</strong> <span class="badge job-status"></span></p>
+            <div class="job-timer-wrapper">
+                <strong>Expires in:</strong> <span class="countdown-timer"></span>
+            </div>
+            <div class="job-actions" style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
+                <!-- Action buttons will be added here -->
+            </div>
+        </div>
+    </template>
+
+    <template id="history-template">
+        <div class="card">
+            <div class="card-header" style="margin-bottom: 2rem;">
+                <h2 class="card-title">Job History & Earnings</h2>
+                <button id="back-to-dashboard-btn" class="btn btn-outline">Back to Dashboard</button>
+            </div>
+    
+            <div class="job-grid" style="margin-bottom: 2rem;">
+                <div class="card text-center">
+                    <h4>Total Earnings</h4>
+                    <p id="total-earnings" class="text-success" style="font-size: 2rem; font-weight: bold;">ZAR 0.00</p>
+                </div>
+                <div class="card text-center">
+                    <h4>This Month</h4>
+                    <p id="month-earnings" class="text-primary" style="font-size: 2rem; font-weight: bold;">ZAR 0.00</p>
+                </div>
+                <div class="card text-center">
+                    <h4>This Year</h4>
+                    <p id="year-earnings" class="text-primary" style="font-size: 2rem; font-weight: bold;">ZAR 0.00</p>
+                </div>
+            </div>
+    
+            <h3>Completed Job History</h3>
+            <div id="history-job-list">
+                <!-- Job history items will be rendered here -->
+            </div>
+        </div>
+    </template>
+    
+    <!-- Modals -->
+    <div id="post-job-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Post a New Job</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <form id="post-job-form">
+                <div class="form-group">
+                    <label for="job-title">Job Title</label>
+                    <input type="text" id="job-title" class="form-control" required placeholder="e.g., Usher for Gala Event">
+                </div>
+                 <div class="form-group">
+                    <label for="job-responsibilities">Responsibilities</label>
+                    <textarea id="job-responsibilities" class="form-control" rows="3" required placeholder="e.g., Greet guests, check tickets..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="job-requirements">Requirements</label>
+                    <textarea id="job-requirements" class="form-control" rows="2" placeholder="e.g., Black tie attire, own transport..."></textarea>
+                </div>
+                 <div class="form-group">
+                    <label for="job-contact-person">On-site Contact Person</label>
+                    <input type="text" id="job-contact-person" class="form-control" placeholder="e.g., Jane Doe - 082 123 4567">
+                </div>
+                <div class="form-group">
+                    <label for="job-category">Category (Skill Required)</label>
+                    <select id="job-category" class="form-control" required>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex-grow: 1;">
+                        <label for="job-budget">Budget (ZAR per person)</label>
+                        <input type="number" id="job-budget" class="form-control" required min="1">
+                    </div>
+                    <div class="form-group" style="width: 120px;">
+                        <label for="job-positions"># of Staff</label>
+                        <input type="number" id="job-positions" class="form-control" required min="1" value="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="job-location-name">Area Name</label>
+                    <input type="text" id="job-location-name" class="form-control" required placeholder="e.g., Sandton, Rosebank, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="job-radius">Search Radius (km)</label>
+                    <input type="number" id="job-radius" class="form-control" required value="15">
+                </div>
+                <div class="form-group">
+                    <label for="job-expiry">Expires in (minutes)</label>
+                    <input type="number" id="job-expiry" class="form-control" required value="60">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Post Job</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="view-applicants-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Job Applicants</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div id="applicants-list-container">
+                <!-- Applicant list will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="rate-freelancer-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Rate Freelancer</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <form id="rate-freelancer-form">
+                <input type="hidden" id="rate-job-id">
+                <input type="hidden" id="rate-freelancer-id">
+                <div class="form-group text-center">
+                    <label>Rating</label>
+                    <div class="rating-stars" data-rating="0">
+                        <span class="star" data-value="1">&#9733;</span>
+                        <span class="star" data-value="2">&#9733;</span>
+                        <span class="star" data-value="3">&#9733;</span>
+                        <span class="star" data-value="4">&#9733;</span>
+                        <span class="star" data-value="5">&#9733;</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="review-text">Review</label>
+                    <textarea id="review-text" class="form-control" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="rate-organizer-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Rate Organizer</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <form id="rate-organizer-form">
+                <input type="hidden" id="rate-organizer-job-id">
+                <input type="hidden" id="rate-organizer-id">
+                <div class="form-group text-center">
+                    <label>Rating</label>
+                    <div class="rating-stars" data-rating="0">
+                        <span class="star" data-value="1">&#9733;</span>
+                        <span class="star" data-value="2">&#9733;</span>
+                        <span class="star" data-value="3">&#9733;</span>
+                        <span class="star" data-value="4">&#9733;</span>
+                        <span class="star" data-value="5">&#9733;</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="organizer-review-text">Review</label>
+                    <textarea id="organizer-review-text" class="form-control" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="report-issue-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Report an Issue</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <form id="report-issue-form">
+                <input type="hidden" id="report-job-id">
+                <p class="text-muted">Please describe the issue you experienced with this job. An admin will review your report.</p>
+                <div class="form-group">
+                    <label for="issue-text">Issue Description</label>
+                    <textarea id="issue-text" class="form-control" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger btn-block">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="profile-displayName">Display Name</label>
+                    <input type="text" id="profile-displayName" class="form-control" required>
+                </div>
+                 <div class="form-group">
+                    <label for="profile-bio">Bio</label>
+                    <textarea id="profile-bio" class="form-control" rows="3" placeholder="Tell organizers a bit about yourself..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="profile-photo">Profile Photo</label>
+                    <input type="file" id="profile-photo" class="form-control" accept="image/*">
+                    <img id="profile-photo-preview" src="" alt="Photo Preview" class="hidden" style="max-width: 100px; margin-top: 10px; border-radius: 50%;">
+                </div>
+                <div id="freelancer-fields">
+                    <div class="form-group">
+                        <label>Skills</label>
+                        <div id="profile-skills-checklist">
+                            <!-- Skills checkboxes will be populated by JS -->
+                        </div>
+                    </div>
+                    <hr style="margin: 1rem 0;">
+                    <div class="form-group">
+                        <label>My Documents</label>
+                        <div id="documents-list" style="margin-bottom: 1rem;"></div>
+                        <form id="add-document-form" style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="document-name" class="form-control" placeholder="Document Name (e.g. Security License)" required>
+                            <input type="file" id="document-file" class="form-control" required>
+                            <button type="submit" class="btn btn-secondary">Add</button>
+                        </form>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="set-location-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Set Your Location</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <p class="text-muted">For accurate job matching, please provide your current location.</p>
+            <button id="auto-detect-location-btn" class="btn btn-primary btn-block">Use My Current Location</button>
+            <hr style="margin: 1rem 0;">
+            <p class="text-center">Or enter an area name manually:</p>
+            <form id="manual-location-form">
+                 <div class="form-group">
+                    <label for="manual-area-name">Area Name</label>
+                    <input type="text" id="manual-area-name" class="form-control" required placeholder="e.g., Sandton">
+                </div>
+                <button type="submit" class="btn btn-secondary btn-block">Save Manual Location</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="wallet-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">My Wallet</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <h3>Current Balance: <span id="modal-wallet-balance" class="text-success"></span></h3>
+            <div id="load-funds-section" class="hidden">
+                <hr style="margin: 1rem 0;">
+                <h4>Load Funds</h4>
+                <form id="load-funds-form">
+                    <div class="form-group">
+                        <label for="load-amount">Amount (ZAR)</label>
+                        <input type="number" id="load-amount" class="form-control" min="100" required>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Load Funds</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="chat-title">Chat</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be rendered here -->
+            </div>
+            <form id="chat-form">
+                <input type="text" id="chat-message-input" class="form-control" placeholder="Type a message..." required>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // --- CONFIG & CONSTANTS ---
+        const DB_VERSION = '1.0.0';
+        const STORAGE_KEY = 'swiftStaffDB';
+        const SKILLS = {
+            "Event Logistics & Setup": ["stagehand", "rigger", "security", "logistics-coordinator", "setup-crew"],
+            "Event Staff & Services": ["bartender", "waitstaff", "registration", "brand-ambassador", "performer"],
+            "Event Cleanup & Maintenance": ["cleaning-crew", "maintenance-tech", "landscaper", "waste-management"],
+            "Additional Categories": ["merchandise", "driver", "it-support", "translator", "admin-staff"],
+        };
+        const AREA_COORDINATES = {
+            "sandton": { lat: -26.1076, lng: 28.0567 },
+            "rosebank": { lat: -26.1392, lng: 28.0428 },
+            "braamfontein": { lat: -26.1952, lng: 28.0358 },
+            "rivonia": { lat: -26.0345, lng: 28.0623 },
+            "parkhurst": { lat: -26.148, lng: 28.032 },
+            "default": { lat: -26.2041, lng: 28.0473 } // Johannesburg default
+        };
+
+        // --- STATE ---
+        let state = {
+            currentUser: null,
+            db: null,
+            timers: [], // To keep track of setIntervals for countdowns
+            currentView: 'dashboard', // To manage which view is active for a freelancer
+        };
+
+        // --- STORAGE MODULE ---
+        const storage = {
+            getDB: () => {
+                try {
+                    const data = localStorage.getItem(STORAGE_KEY);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        // Simple migration check
+                        if (parsed.version === DB_VERSION) {
+                            return parsed;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error reading from localStorage", e);
+                }
+                // If no data, old version, or error, initialize
+                return storage.initDB();
+            },
+            saveDB: (db) => {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+                } catch (e) {
+                    console.error("Error saving to localStorage", e);
+                }
+            },
+            initDB: () => {
+                console.log("Initializing and seeding new database...");
+                const db = {
+                    version: DB_VERSION,
+                    users: [],
+                    jobs: [],
+                    reviews: [],
+                    notifications: [],
+                    chats: [],
+                    disputes: [],
+                };
+                storage.seedData(db);
+                storage.saveDB(db);
+                return db;
+            },
+            seedData: (db) => {
+                // --- SET CURRENT TIME TO SATURDAY, AUGUST 16, 2025 15:35 SAST ---
+                const now = new Date('2025-08-16T15:35:00+02:00');
+
+                // Seed Freelancers
+                const freelancers = [
+                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender with a passion for mixology. Punctual, professional, and great with customers.", documents: [] }, 
+                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient event staff, perfect for registration desks and setup tasks. Quick learner.", documents: [] },
+                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team. We ensure every venue is spotless post-event. Reliable and thorough.", documents: [] },
+                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador and experienced waitress. I bring energy and a smile to every event.", documents: [] },
+                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit. I'm your guy for setup, teardown, and logistics.", documents: [] },
+                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel and a skilled bartender. I can ensure your event is both safe and enjoyable.", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf"}] },
+                ];
+                db.users.push(...freelancers);
+
+                // Seed Clients
+                const clients = [
+                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15 },
+                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22 },
+                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30 },
+                ];
+                db.users.push(...clients);
+
+                // Seed Jobs
+                const jobs = [
+                    // --- OPEN JOBS ---
+                    { id: `job-1`, title: "Urgent Bartenders for Gala", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", budget: 1500, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], expiresAtISO: new Date(now.getTime() + 30 * 60 * 1000).toISOString() }, 
+                    { id: `job-2`, title: "Music Festival Setup Crew", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", budget: 800, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], expiresAtISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString() },
+                    
+                    // --- ASSIGNED JOB ---
+                    { id: `job-3`, title: "Corporate Event Greeters", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", budget: 750, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], expiresAtISO: new Date(now.getTime() - 22 * 60 * 60 * 1000).toISOString() }, 
+                    
+                    // --- COMPLETED JOB (AWAITING RATING/PAYMENT) ---
+                    { id: `job-4`, title: "Post-Wedding Cleanup", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", budget: 600, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], expiresAtISO: new Date(now.getTime() - 7 * 60 * 60 * 1000).toISOString() },
+
+                    // --- PAID & REVIEWED JOB ---
+                    { id: `job-5`, title: "Charity Fun Run Marshals", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", budget: 500, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], expiresAtISO: new Date(now.getTime() - (7 * 24 - 1) * 60 * 60 * 1000).toISOString() },
+
+                    // --- DISPUTED JOB ---
+                    { id: `job-6`, title: "New Year's Eve Security", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", budget: 2000, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], expiresAtISO: new Date('2025-01-01T01:00:00+02:00').toISOString() },
+                ];
+                db.jobs.push(...jobs);
+
+                // Seed Reviews
+                const reviews = [
+                    { id: `review-1`, jobId: jobs[4].id, fromUserId: clients[2].id, toUserId: freelancers[0].id, fromRole: 'client', stars: 5, text: "Excellent work as always.", createdAtISO: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `review-2`, jobId: jobs[4].id, fromUserId: freelancers[3].id, toUserId: clients[2].id, fromRole: 'freelancer', stars: 5, text: "Great organizer, very clear instructions.", createdAtISO: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString() }
+                ];
+                db.reviews.push(...reviews);
+
+                // Seed Disputes
+                const disputes = [
+                    { id: `dispute-1`, jobId: jobs[5].id, reporterId: freelancers[5].id, issueText: "The client has not paid the agreed upon amount and is now unreachable. The event was much larger than described.", createdAtISO: new Date('2025-01-05T10:00:00+02:00').toISOString(), status: 'open' }
+                ];
+                db.disputes.push(...disputes);
+
+                // Seed Chats
+                const chats = [
+                    { id: `chat-${jobs[0].id}`, jobId: jobs[0].id, messages: [] },
+                    { id: `chat-${jobs[2].id}`, jobId: jobs[2].id, messages: [
+                        { senderId: clients[0].id, text: "Hi team, thanks for accepting. Please meet me at the main entrance tomorrow.", timestampISO: new Date(now.getTime() - 23 * 60 * 60 * 1000).toISOString() },
+                        { senderId: freelancers[1].id, text: "Got it, see you then!", timestampISO: new Date(now.getTime() - 22 * 60 * 60 * 1000).toISOString() }
+                    ]},
+                ];
+                db.chats.push(...chats);
+            }
+        };
+
+        // --- AUTH MODULE ---
+        const auth = {
+            login: (username, password) => {
+                const user = state.db.users.find(u => u.username === username && u.passwordHash === password); // Simplified hash
+                if (user) {
+                    state.currentUser = user;
+                    return true;
+                }
+                return false;
+            },
+            register: (username, password, displayName, role) => {
+                if (state.db.users.some(u => u.username === username)) {
+                    return { success: false, message: "Username already exists." };
+                }
+                const newUser = {
+                    id: `user-${Date.now()}`,
+                    role,
+                    username,
+                    passwordHash: password, // Simplified hash for demo
+                    displayName,
+                    wallet: role === 'client' ? 1000 : 0, // Starting balance
+                    createdAt: new Date().toISOString(),
+                    avgRating: 0,
+                    ratingsCount: 0,
+                };
+                if (role === 'freelancer') {
+                    newUser.skills = [];
+                    newUser.availability = "away";
+                    newUser.documents = [];
+                }
+                state.db.users.push(newUser);
+                storage.saveDB(state.db);
+                return { success: true, user: newUser };
+            },
+            logout: () => {
+                state.currentUser = null;
+                state.currentView = 'dashboard'; // Reset view on logout
+                ui.render();
+            },
+            updateUser: (userId, updates) => {
+                const userIndex = state.db.users.findIndex(u => u.id === userId);
+                if (userIndex !== -1) {
+                    state.db.users[userIndex] = { ...state.db.users[userIndex], ...updates };
+                    // If updating current user, update state object as well
+                    if (state.currentUser && state.currentUser.id === userId) {
+                        state.currentUser = { ...state.currentUser, ...updates };
+                    }
+                    storage.saveDB(state.db);
+                    return true;
+                }
+                return false;
+            }
+        };
+        
+        // --- GEOLOCATION & MATCHING MODULE ---
+        const geo = {
+            // Haversine formula to calculate distance between two points in km
+            getDistance: (loc1, loc2) => {
+                if (!loc1 || !loc2) return Infinity;
+                const R = 6371; // Radius of the Earth in km
+                const dLat = (loc2.lat - loc1.lat) * Math.PI / 180;
+                const dLon = (loc2.lng - loc1.lng) * Math.PI / 180;
+                const a =
+                    0.5 - Math.cos(dLat)/2 +
+                    Math.cos(loc1.lat * Math.PI / 180) * Math.cos(loc2.lat * Math.PI / 180) *
+                    (1 - Math.cos(dLon)) / 2;
+                return R * 2 * Math.asin(Math.sqrt(a));
+            },
+            requestLocation: () => {
+                return new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject("Geolocation is not supported by your browser.");
+                    } else {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => resolve({
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            }),
+                            () => reject("Unable to retrieve your location.")
+                        );
+                    }
+                });
+            }
+        };
+
+        const matching = {
+            findEligibleJobsFor: (freelancer) => {
+                if (!freelancer || freelancer.availability !== 'available' || !freelancer.lastKnownLocation) {
+                    return [];
+                }
+                const now = new Date();
+                return state.db.jobs.filter(job => {
+                    const isExpired = new Date(job.expiresAtISO) < now;
+                    if (job.status !== 'open' || isExpired) {
+                        if (job.status === 'open' && isExpired) {
+                            // Expire the job
+                            const jobIndex = state.db.jobs.findIndex(j => j.id === job.id);
+                            state.db.jobs[jobIndex].status = 'expired';
+                            storage.saveDB(state.db);
+                        }
+                        return false;
+                    }
+
+                    const hasSkill = freelancer.skills.includes(job.category);
+                    const distance = geo.getDistance(freelancer.lastKnownLocation, job.location);
+                    const isInRadius = distance <= job.radiusKm;
+                    
+                    return hasSkill && isInRadius;
+                });
+            }
+        };
+
+        // --- NOTIFICATION MODULE ---
+        const notifications = {
+            requestPermission: async () => {
+                if ('Notification' in window) {
+                    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                        await Notification.requestPermission();
+                    }
+                }
+            },
+            showToast: (message) => {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                container.appendChild(toast);
+                
+                setTimeout(() => toast.classList.add('show'), 10); // Trigger transition
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300); // Remove after transition
+                }, 3000);
+            },
+            showBrowserNotification: (title, body) => {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(title, { body });
+                } else {
+                    console.log(`Browser notification fallback: ${title} - ${body}`);
+                }
+            },
+            create: (userId, message, type = 'general', relatedId = null) => {
+                const notif = {
+                    id: `notif-${Date.now()}`,
+                    userId,
+                    message,
+                    createdAtISO: new Date().toISOString(),
+                    read: false,
+                    type, // 'general', 'chat'
+                    relatedId, // e.g., jobId for chat
+                };
+                state.db.notifications.push(notif);
+                storage.saveDB(state.db);
+                
+                // If the notification is for the current user, show it
+                if (state.currentUser && state.currentUser.id === userId) {
+                    notifications.showToast(message);
+                    if (type === 'general' && state.currentUser.role === 'freelancer') {
+                         notifications.showBrowserNotification("New Job Alert!", message);
+                    } else if (type === 'chat') {
+                        notifications.showBrowserNotification("New Message", message);
+                    }
+                }
+            }
+        };
+
+        // --- UI MODULE ---
+        const ui = {
+            render: () => {
+                const root = document.getElementById('app-root');
+                const nav = document.getElementById('main-nav');
+                root.innerHTML = '';
+                nav.innerHTML = '';
+                
+                // Clear all existing timers
+                state.timers.forEach(clearInterval);
+                state.timers = [];
+
+                if (state.currentUser) {
+                    ui.renderNav();
+                    const user = state.currentUser;
+                    if (user.role === 'freelancer' && state.currentView === 'history') {
+                        ui.renderFreelancerHistory();
+                    } else if (user.role === 'freelancer' && (!user.skills || user.skills.length === 0 || !user.lastKnownLocation)) {
+                        ui.renderFreelancerOnboarding();
+                    } else if (user.role === 'client') {
+                        ui.renderClientDashboard();
+                    } else {
+                        ui.renderFreelancerDashboard();
+                    }
+                } else {
+                    state.currentView = 'dashboard'; // Reset on logout
+                    ui.renderLogin();
+                }
+                ui.attachGlobalListeners();
+            },
+            renderLogin: () => {
+                const root = document.getElementById('app-root');
+                const template = document.getElementById('login-template');
+                root.innerHTML = template.innerHTML;
+
+                let isRegistering = false;
+
+                const title = document.getElementById('auth-title');
+                const form = document.getElementById('auth-form');
+                const toggleLink = document.getElementById('auth-toggle-link');
+                const submitBtn = document.getElementById('auth-submit-btn');
+                const displayNameGroup = document.getElementById('display-name-group');
+                const roleGroup = document.getElementById('role-group');
+
+                toggleLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    isRegistering = !isRegistering;
+                    title.textContent = isRegistering ? 'Register' : 'Login';
+                    submitBtn.textContent = isRegistering ? 'Register' : 'Login';
+                    toggleLink.textContent = isRegistering ? 'Already have an account? Login' : "Don't have an account? Register";
+                    displayNameGroup.classList.toggle('hidden', !isRegistering);
+                    roleGroup.classList.toggle('hidden', !isRegistering);
+                });
+
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+
+                    if (isRegistering) {
+                        const displayName = document.getElementById('displayName').value;
+                        const role = document.getElementById('role').value;
+                        if (!displayName) {
+                             notifications.showToast("Display name is required.");
+                             return;
+                        }
+                        const result = auth.register(username, password, displayName, role);
+                        if (result.success) {
+                            auth.login(username, password);
+                            ui.render();
+                        } else {
+                            notifications.showToast(result.message);
+                        }
+                    } else {
+                        if (auth.login(username, password)) {
+                            ui.render();
+                        } else {
+                            notifications.showToast("Invalid username or password.");
+                        }
+                    }
+                });
+            },
+            renderNav: () => {
+                const nav = document.getElementById('main-nav');
+                const walletBalance = state.currentUser.wallet.toFixed(2);
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                
+                let availabilityToggle = '';
+                if (state.currentUser.role === 'freelancer') {
+                    const isAvailable = state.currentUser.availability === 'available';
+                    availabilityToggle = `
+                        <button id="availability-toggle" class="btn ${isAvailable ? 'btn-danger' : 'btn-success'}">
+                            ${isAvailable ? 'Go Away' : 'Go Online'}
+                        </button>
+                    `;
+                }
+
+                let historyLink = '';
+                if (state.currentUser.role === 'freelancer') {
+                    if (state.currentView === 'history') {
+                        historyLink = `<a href="#" id="dashboard-link">Dashboard</a>`;
+                    } else {
+                        historyLink = `<a href="#" id="history-link">History</a>`;
+                    }
+                }
+
+                nav.innerHTML = `
+                    <span>Welcome, <strong>${state.currentUser.displayName}</strong></span>
+                    <a href="#" id="wallet-link">Wallet: ZAR <span id="wallet-balance">${walletBalance}</span></a>
+                    ${availabilityToggle}
+                    ${historyLink}
+                    <a href="#" id="edit-profile-link">Profile</a>
+                    <a href="#" id="logout-link">Logout</a>
+                    <button id="reset-data-btn" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Reset Demo</button>
+                    <button id="theme-toggle-btn" class="theme-toggle">${isDarkMode ? '☀️' : '🌙'}</button>
+                `;
+
+                document.getElementById('logout-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.logout();
+                });
+                
+                document.getElementById('edit-profile-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    ui.showModal('edit-profile-modal');
+                });
+
+                document.getElementById('wallet-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    ui.showModal('wallet-modal');
+                });
+                
+                if (document.getElementById('availability-toggle')) {
+                    document.getElementById('availability-toggle').addEventListener('click', handlers.handleAvailabilityToggle);
+                }
+                
+                document.getElementById('reset-data-btn').addEventListener('click', () => {
+                    localStorage.removeItem(STORAGE_KEY);
+                    state.currentUser = null;
+                    state.db = storage.initDB();
+                    ui.render();
+                    notifications.showToast("Demo data has been reset.");
+                });
+
+                document.getElementById('theme-toggle-btn').addEventListener('click', handlers.handleThemeToggle);
+
+                document.getElementById('history-link')?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    state.currentView = 'history';
+                    ui.render();
+                });
+                document.getElementById('dashboard-link')?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    state.currentView = 'dashboard';
+                    ui.render();
+                });
+            },
+            renderFreelancerOnboarding: () => {
+                const root = document.getElementById('app-root');
+                root.innerHTML = `
+                    <div class="card text-center">
+                        <h2>Welcome to SwiftStaff!</h2>
+                        <p class="text-muted">To start seeing available jobs, you need to set up your profile.</p>
+                        <br>
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <button id="setup-skills-btn" class="btn btn-primary">1. Add Your Skills</button>
+                            <button id="setup-location-btn" class="btn btn-primary">2. Set Your Location</button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('setup-skills-btn').addEventListener('click', () => ui.showModal('edit-profile-modal'));
+                document.getElementById('setup-location-btn').addEventListener('click', () => ui.showModal('set-location-modal'));
+            },
+            renderClientDashboard: () => {
+                const root = document.getElementById('app-root');
+                root.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2>Client Dashboard</h2>
+                        <button id="post-job-btn" class="btn btn-primary">Post New Job</button>
+                    </div>
+                    
+                    <h3>Open Jobs</h3>
+                    <div id="open-jobs" class="job-grid"></div>
+                    <hr style="margin: 2rem 0; border-color: var(--border-color);">
+                    
+                    <h3>Assigned Jobs</h3>
+                    <div id="assigned-jobs" class="job-grid"></div>
+                    <hr style="margin: 2rem 0; border-color: var(--border-color);">
+                    
+                    <h3>Completed Jobs (Awaiting Payment/Rating)</h3>
+                    <div id="completed-jobs" class="job-grid"></div>
+                    <hr style="margin: 2rem 0; border-color: var(--border-color);">
+
+                    <h3>Paid Jobs</h3>
+                    <div id="paid-jobs" class="job-grid"></div>
+                `;
+                
+                const jobs = state.db.jobs.filter(j => j.clientId === state.currentUser.id);
+                
+                const openJobs = jobs.filter(j => j.status === 'open' && new Date(j.expiresAtISO) > new Date());
+                const assignedJobs = jobs.filter(j => j.status === 'assigned');
+                const completedJobs = jobs.filter(j => j.status === 'completed');
+                const paidJobs = jobs.filter(j => j.status === 'paid');
+
+                ui.renderJobCards('open-jobs', openJobs);
+                ui.renderJobCards('assigned-jobs', assignedJobs);
+                ui.renderJobCards('completed-jobs', completedJobs);
+                ui.renderJobCards('paid-jobs', paidJobs);
+
+                document.getElementById('post-job-btn').addEventListener('click', () => ui.showModal('post-job-modal'));
+            },
+            renderFreelancerDashboard: () => {
+                const root = document.getElementById('app-root');
+                root.innerHTML = `
+                    <h2>Freelancer Dashboard</h2>
+                    
+                    <h3>Available Jobs Near You</h3>
+                    <div id="available-jobs" class="job-grid"></div>
+                    <hr style="margin: 2rem 0; border-color: var(--border-color);">
+                    
+                    <h3>My Assigned Jobs</h3>
+                    <div id="assigned-jobs" class="job-grid"></div>
+                    <hr style="margin: 2rem 0; border-color: var(--border-color);">
+                    
+                    <h3>My Completed Jobs</h3>
+                    <div id="completed-jobs" class="job-grid"></div>
+                `;
+
+                const eligibleJobs = matching.findEligibleJobsFor(state.currentUser);
+                ui.renderJobCards('available-jobs', eligibleJobs);
+                
+                const myJobs = state.db.jobs.filter(j => j.assignedFreelancers.includes(state.currentUser.id));
+                ui.renderJobCards('assigned-jobs', myJobs.filter(j => j.status === 'assigned'));
+                ui.renderJobCards('completed-jobs', myJobs.filter(j => ['completed', 'paid'].includes(j.status)));
+
+                if (state.currentUser.availability === 'available' && eligibleJobs.length === 0) {
+                    document.getElementById('available-jobs').innerHTML = '<p>No available jobs matching your skills and location right now. Stay tuned!</p>';
+                } else if (state.currentUser.availability === 'away') {
+                     document.getElementById('available-jobs').innerHTML = '<p>You are currently offline. <a href="#" id="go-online-link">Go online</a> to see available jobs.</p>';
+                     document.getElementById('go-online-link').addEventListener('click', handlers.handleAvailabilityToggle);
+                }
+            },
+            renderFreelancerHistory: () => {
+                const root = document.getElementById('app-root');
+                const template = document.getElementById('history-template').content.cloneNode(true);
+                root.innerHTML = ''; // Clear the root
+                root.appendChild(template);
+
+                document.getElementById('back-to-dashboard-btn').addEventListener('click', () => {
+                    state.currentView = 'dashboard';
+                    ui.render();
+                });
+
+                const myJobs = state.db.jobs.filter(j => 
+                    j.assignedFreelancers.includes(state.currentUser.id) && 
+                    ['completed', 'paid'].includes(j.status)
+                );
+
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                let totalEarnings = 0;
+                let monthEarnings = 0;
+                let yearEarnings = 0;
+
+                myJobs.forEach(job => {
+                    totalEarnings += job.budget;
+                    const jobDate = new Date(job.createdAtISO);
+                    if (jobDate.getFullYear() === currentYear) {
+                        yearEarnings += job.budget;
+                        if (jobDate.getMonth() === currentMonth) {
+                            monthEarnings += job.budget;
+                        }
+                    }
+                });
+
+                document.getElementById('total-earnings').textContent = `ZAR ${totalEarnings.toFixed(2)}`;
+                document.getElementById('month-earnings').textContent = `ZAR ${monthEarnings.toFixed(2)}`;
+                document.getElementById('year-earnings').textContent = `ZAR ${yearEarnings.toFixed(2)}`;
+
+                const jobListContainer = document.getElementById('history-job-list');
+                if (myJobs.length === 0) {
+                    jobListContainer.innerHTML = '<p class="text-muted">You have no completed jobs yet.</p>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'form-control'; // Re-using some styling for the container
+                table.style.width = '100%';
+                table.innerHTML = `
+                    <thead style="border-bottom: 1px solid var(--border-color);">
+                        <tr>
+                            <th style="padding: 0.5rem; text-align: left;">Date</th>
+                            <th style="padding: 0.5rem; text-align: left;">Job Title</th>
+                            <th style="padding: 0.5rem; text-align: left;">Client</th>
+                            <th style="padding: 0.5rem; text-align: right;">Budget</th>
+                            <th style="padding: 0.5rem; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                const tbody = table.querySelector('tbody');
+                myJobs.sort((a, b) => new Date(b.createdAtISO) - new Date(a.createdAtISO));
+
+                myJobs.forEach(job => {
+                    const client = state.db.users.find(u => u.id === job.clientId);
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid var(--border-color)';
+                    row.innerHTML = `
+                        <td style="padding: 0.5rem;">${new Date(job.createdAtISO).toLocaleDateString()}</td>
+                        <td style="padding: 0.5rem;">${job.title}</td>
+                        <td style="padding: 0.5rem;">${client ? client.displayName : 'N/A'}</td>
+                        <td style="padding: 0.5rem; text-align: right;">ZAR ${job.budget.toFixed(2)}</td>
+                        <td style="padding: 0.5rem; text-align: center;"><span class="badge badge-${job.status === 'paid' ? 'success' : 'warning'}">${job.status}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                jobListContainer.appendChild(table);
+            },
+            renderJobCards: (containerId, jobs) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                if (jobs.length === 0) {
+                    container.innerHTML = '<p>No jobs in this category.</p>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                jobs.forEach(job => {
+                    const card = ui.createJobCard(job);
+                    container.appendChild(card);
+                });
+            },
+            createJobCard: (job) => {
+                const template = document.getElementById('job-card-template');
+                const card = template.content.cloneNode(true).firstElementChild;
+                card.dataset.jobId = job.id;
+
+                const userRole = state.currentUser.role;
+                const distance = userRole === 'freelancer' && state.currentUser.lastKnownLocation ?
+                    geo.getDistance(state.currentUser.lastKnownLocation, job.location).toFixed(1) : 'N/A';
+
+                card.querySelector('.job-title').textContent = job.title;
+                card.querySelector('.job-category').textContent = job.category.replace(/-/g, ' ');
+                card.querySelector('.job-category').classList.add(`badge-primary`);
+                
+                const descContainer = card.querySelector('.job-description');
+                descContainer.innerHTML = `
+                    <p><strong>Responsibilities:</strong> ${job.description.responsibilities || 'Not specified'}</p>
+                    <p><strong>Requirements:</strong> ${job.description.requirements || 'Not specified'}</p>
+                `;
+
+                card.querySelector('.job-budget').textContent = job.budget.toFixed(2);
+                card.querySelector('.job-location').textContent = job.location.areaName;
+                card.querySelector('.job-distance').textContent = distance;
+                card.querySelector('.job-positions').textContent = `${job.assignedFreelancers.length} / ${job.positionsNeeded}`;
+
+                const statusEl = card.querySelector('.job-status');
+                statusEl.textContent = job.status;
+                const statusColors = { open: 'success', assigned: 'info', completed: 'warning', paid: 'primary', expired: 'secondary' };
+                statusEl.className = `badge job-status badge-${statusColors[job.status] || 'secondary'}`;
+
+                const actionsContainer = card.querySelector('.job-actions');
+                actionsContainer.innerHTML = ''; // Clear previous actions
+
+                // Countdown Timer
+                const timerWrapper = card.querySelector('.job-timer-wrapper');
+                const timerEl = card.querySelector('.countdown-timer');
+                if (job.status === 'open') {
+                    const updateTimer = () => {
+                        const timeLeft = new Date(job.expiresAtISO) - new Date();
+                        if (timeLeft <= 0) {
+                            timerEl.textContent = 'Expired';
+                            card.querySelector('.job-status').textContent = 'expired';
+                            card.querySelector('.job-status').className = 'badge job-status badge-secondary';
+                            actionsContainer.innerHTML = '';
+                            // Find timer in state and clear it
+                            const timerIndex = state.timers.findIndex(t => t.jobId === job.id);
+                            if (timerIndex > -1) {
+                                clearInterval(state.timers[timerIndex].intervalId);
+                                state.timers.splice(timerIndex, 1);
+                            }
+                        } else {
+                            const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
+                            const seconds = Math.floor((timeLeft / 1000) % 60);
+                            timerEl.textContent = `${minutes}m ${seconds}s`;
+                        }
+                    };
+                    updateTimer();
+                    const intervalId = setInterval(updateTimer, 1000);
+                    state.timers.push({ jobId: job.id, intervalId: intervalId });
+                    timerWrapper.classList.remove('hidden');
+                } else {
+                    timerWrapper.classList.add('hidden');
+                }
+
+                // Action Buttons
+                if (userRole === 'freelancer') {
+                    if (job.status === 'open') {
+                        const applyBtn = document.createElement('button');
+                        applyBtn.className = 'btn btn-success';
+                        const hasApplied = job.applicants.some(app => app.freelancerId === state.currentUser.id);
+                        if (hasApplied) {
+                            applyBtn.textContent = 'Applied';
+                            applyBtn.disabled = true;
+                        } else {
+                            applyBtn.textContent = 'Apply for Job';
+                            applyBtn.onclick = () => handlers.handleApplyForJob(job.id);
+                        }
+                        actionsContainer.appendChild(applyBtn);
+                    } else if (['assigned', 'completed', 'paid'].includes(job.status) && job.assignedFreelancers.includes(state.currentUser.id)) {
+                        const client = state.db.users.find(u => u.id === job.clientId);
+                        const contactInfo = document.createElement('p');
+                        contactInfo.innerHTML = `<strong>Client:</strong> ${client.displayName}`;
+                        actionsContainer.appendChild(contactInfo);
+                        
+                        if (job.status === 'completed' || job.status === 'paid') {
+                            const hasRated = state.db.reviews.some(r => r.jobId === job.id && r.fromUserId === state.currentUser.id);
+                            if (!hasRated) {
+                                const rateBtn = document.createElement('button');
+                                rateBtn.className = 'btn btn-warning';
+                                rateBtn.textContent = 'Rate Organizer';
+                                rateBtn.onclick = () => handlers.handleShowRateOrganizerModal(job.id, job.clientId);
+                                actionsContainer.appendChild(rateBtn);
+                            }
+                        }
+                    }
+                } else if (userRole === 'client') {
+                    if (job.status === 'open') {
+                        const viewApplicantsBtn = document.createElement('button');
+                        viewApplicantsBtn.className = 'btn btn-primary';
+                        viewApplicantsBtn.textContent = `View Applicants (${job.applicants.length})`;
+                        viewApplicantsBtn.onclick = () => ui.renderApplicantsModal(job.id);
+                        actionsContainer.appendChild(viewApplicantsBtn);
+                    } else if (['assigned', 'completed', 'paid'].includes(job.status)) {
+                        const hiredList = document.createElement('div');
+                        hiredList.innerHTML = '<strong>Hired:</strong>';
+                        job.assignedFreelancers.forEach(fId => {
+                            const freelancer = state.db.users.find(u => u.id === fId);
+                            if (freelancer) {
+                                const freelancerEl = document.createElement('p');
+                                let certifiedBadge = '';
+                                if (freelancer.documents && freelancer.documents.length > 0) {
+                                    certifiedBadge = `<span class="badge badge-success" style="margin-left: 5px;">Certified</span>`;
+                                }
+                                freelancerEl.innerHTML = `${freelancer.displayName} ${certifiedBadge}`;
+                                if (job.status === 'completed') {
+                                    const hasRated = state.db.reviews.some(r => r.jobId === job.id && r.toUserId === freelancer.id);
+                                    if (!hasRated) {
+                                        const rateBtn = document.createElement('button');
+                                        rateBtn.className = 'btn btn-warning';
+                                        rateBtn.textContent = 'Rate';
+                                        rateBtn.style.padding = '0.2rem 0.5rem';
+                                        rateBtn.style.marginLeft = '10px';
+                                        rateBtn.onclick = () => handlers.handleShowRateModal(job.id, freelancer.id);
+                                        freelancerEl.appendChild(rateBtn);
+                                    }
+                                }
+                                hiredList.appendChild(freelancerEl);
+                            }
+                        });
+                        actionsContainer.appendChild(hiredList);
+                    } 
+                    if (job.status === 'assigned') {
+                        const completeBtn = document.createElement('button');
+                        completeBtn.className = 'btn btn-primary';
+                        completeBtn.textContent = 'Mark as Completed';
+                        completeBtn.onclick = () => handlers.handleCompleteJob(job.id);
+                        actionsContainer.appendChild(completeBtn);
+                    }
+                    if (job.status === 'completed') {
+                        const payBtn = document.createElement('button');
+                        payBtn.className = 'btn btn-success';
+                        payBtn.textContent = 'Pay All Staff';
+                        payBtn.onclick = () => handlers.handlePayment(job.id);
+                        actionsContainer.appendChild(payBtn);
+                    }
+                }
+
+                // Report Issue Button
+                if (['assigned', 'completed'].includes(job.status)) {
+                    const hasReported = state.db.disputes.some(d => d.jobId === job.id && d.reporterId === state.currentUser.id);
+                    const reportBtn = document.createElement('button');
+                    reportBtn.className = 'btn btn-danger btn-outline';
+                    reportBtn.style.borderColor = 'var(--danger-color)';
+                    reportBtn.style.color = 'var(--danger-color)';
+                    if (hasReported) {
+                        reportBtn.textContent = 'Issue Reported';
+                        reportBtn.disabled = true;
+                    } else {
+                        reportBtn.textContent = 'Report Issue';
+                        reportBtn.onclick = () => handlers.handleShowReportIssueModal(job.id);
+                    }
+                    actionsContainer.appendChild(reportBtn);
+                }
+                
+                return card;
+            },
+            showModal: (modalId) => {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    // Pre-fill forms if necessary
+                    if (modalId === 'edit-profile-modal') {
+                        const user = state.currentUser;
+                        document.getElementById('profile-displayName').value = user.displayName;
+                        document.getElementById('profile-bio').value = user.bio || '';
+                        document.getElementById('profile-photo-preview').src = user.photoDataURL || '';
+                        document.getElementById('profile-photo-preview').classList.toggle('hidden', !user.photoDataURL);
+                        
+                        const freelancerFields = document.getElementById('freelancer-fields');
+                        if (user.role === 'freelancer') {
+                            freelancerFields.classList.remove('hidden');
+                            const skillsContainer = document.getElementById('profile-skills-checklist');
+                            skillsContainer.innerHTML = ''; // Clear old skills
+                            for (const category in SKILLS) {
+                                let categoryHtml = `
+                                    <details class="skills-category">
+                                        <summary>${category}</summary>
+                                `;
+                                categoryHtml += SKILLS[category].map(skill => `
+                                    <div class="skill-item">
+                                        <input type="checkbox" id="skill-${skill}" name="skills" value="${skill}" ${user.skills && user.skills.includes(skill) ? 'checked' : ''}>
+                                        <label for="skill-${skill}">${skill.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label>
+                                    </div>
+                                `).join('');
+                                categoryHtml += `</details>`;
+                                skillsContainer.innerHTML += categoryHtml;
+                            }
+                            ui.renderDocumentList();
+                        } else {
+                            freelancerFields.classList.add('hidden');
+                        }
+                    } else if (modalId === 'wallet-modal') {
+                        document.getElementById('modal-wallet-balance').textContent = `ZAR ${state.currentUser.wallet.toFixed(2)}`;
+                        const loadFundsSection = document.getElementById('load-funds-section');
+                        loadFundsSection.classList.toggle('hidden', state.currentUser.role !== 'client');
+                    } else if (modalId === 'post-job-modal') {
+                        const categorySelect = document.getElementById('job-category');
+                        categorySelect.innerHTML = ''; // Clear old options
+                        for (const category in SKILLS) {
+                            const optgroup = document.createElement('optgroup');
+                            optgroup.label = category;
+                            SKILLS[category].forEach(skill => {
+                                const option = document.createElement('option');
+                                option.value = skill;
+                                option.textContent = skill.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                optgroup.appendChild(option);
+                            });
+                            categorySelect.appendChild(optgroup);
+                        }
+                    }
+                    modal.classList.remove('hidden');
+                }
+            },
+            renderDocumentList: () => {
+                const user = state.currentUser;
+                const listEl = document.getElementById('documents-list');
+                listEl.innerHTML = '';
+                if (user.documents && user.documents.length > 0) {
+                    user.documents.forEach(doc => {
+                        const docEl = document.createElement('div');
+                        docEl.style.display = 'flex';
+                        docEl.style.justifyContent = 'space-between';
+                        docEl.style.alignItems = 'center';
+                        docEl.style.marginBottom = '0.5rem';
+                        docEl.innerHTML = `
+                            <span><strong>${doc.name}</strong> (${doc.fileName})</span>
+                            <button class="btn btn-danger btn-sm" data-doc-id="${doc.id}">&times;</button>
+                        `;
+                        docEl.querySelector('button').addEventListener('click', (e) => {
+                            const docId = parseInt(e.target.dataset.docId, 10);
+                            handlers.handleDeleteDocument(docId);
+                        });
+                        listEl.appendChild(docEl);
+                    });
+                } else {
+                    listEl.innerHTML = '<p class="text-muted">No documents uploaded.</p>';
+                }
+            },
+            hideModal: (modalId) => {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.add('hidden');
+            },
+            attachGlobalListeners: () => {
+                // Close modals
+                document.querySelectorAll('.modal .close-button').forEach(btn => {
+                    btn.onclick = () => btn.closest('.modal').classList.add('hidden');
+                });
+                // Close modal on outside click
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.onclick = (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add('hidden');
+                        }
+                    };
+                });
+                
+                // Attach form handlers
+                document.getElementById('post-job-form')?.addEventListener('submit', handlers.handlePostJob);
+                document.getElementById('edit-profile-form')?.addEventListener('submit', handlers.handleEditProfile);
+                document.getElementById('rate-freelancer-form')?.addEventListener('submit', handlers.handleRateFreelancer);
+                document.getElementById('rate-organizer-form')?.addEventListener('submit', handlers.handleRateOrganizer);
+                document.getElementById('report-issue-form')?.addEventListener('submit', handlers.handleReportIssue);
+                document.getElementById('load-funds-form')?.addEventListener('submit', handlers.handleLoadFunds);
+                document.getElementById('auto-detect-location-btn')?.addEventListener('click', handlers.handleAutoDetectLocation);
+                document.getElementById('manual-location-form')?.addEventListener('submit', handlers.handleManualLocation);
+                document.getElementById('add-document-form')?.addEventListener('submit', handlers.handleAddDocument);
+
+                // Rating stars interaction
+                document.querySelectorAll('.rating-stars .star').forEach(star => {
+                    star.addEventListener('click', () => {
+                        const value = star.dataset.value;
+                        star.parentElement.dataset.rating = value;
+                        star.parentElement.querySelectorAll('.star').forEach(s => {
+                            s.classList.toggle('selected', s.dataset.value <= value);
+                        });
+                    });
+                });
+            }
+        };
+
+        // --- HANDLERS MODULE ---
+        const handlers = {
+            handleThemeToggle: () => {
+                document.body.classList.toggle('dark-mode');
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                localStorage.setItem('swiftStaffTheme', isDarkMode ? 'dark' : 'light');
+                document.getElementById('theme-toggle-btn').innerHTML = isDarkMode ? '☀️' : '🌙';
+            },
+            handlePostJob: (e) => {
+                e.preventDefault();
+                const now = new Date();
+                const expiryMinutes = parseInt(document.getElementById('job-expiry').value, 10);
+                const areaName = document.getElementById('job-location-name').value.toLowerCase().trim();
+                const coords = AREA_COORDINATES[areaName] || AREA_COORDINATES['default'];
+
+                const newJob = {
+                    id: `job-${Date.now()}`,
+                    title: document.getElementById('job-title').value,
+                    positionsNeeded: parseInt(document.getElementById('job-positions').value, 10) || 1,
+                    description: {
+                        responsibilities: document.getElementById('job-responsibilities').value,
+                        requirements: document.getElementById('job-requirements').value,
+                        contact: document.getElementById('job-contact-person').value,
+                    },
+                    category: document.getElementById('job-category').value,
+                    budget: parseFloat(document.getElementById('job-budget').value),
+                    location: {
+                        lat: coords.lat,
+                        lng: coords.lng,
+                        areaName: document.getElementById('job-location-name').value,
+                    },
+                    radiusKm: parseInt(document.getElementById('job-radius').value, 10),
+                    createdAtISO: now.toISOString(),
+                    expiresAtISO: new Date(now.getTime() + expiryMinutes * 60 * 1000).toISOString(),
+                    status: 'open',
+                    clientId: state.currentUser.id,
+                    applicants: [],
+                    assignedFreelancers: [],
+                };
+                state.db.jobs.push(newJob);
+                storage.saveDB(state.db);
+                
+                // Notify eligible freelancers
+                const eligibleFreelancers = state.db.users.filter(u => 
+                    u.role === 'freelancer' && 
+                    u.availability === 'available' &&
+                    u.skills.includes(newJob.category) &&
+                    geo.getDistance(u.lastKnownLocation, newJob.location) <= newJob.radiusKm
+                );
+                
+                eligibleFreelancers.forEach(f => {
+                    notifications.create(f.id, `New '${newJob.category}' job posted near you: "${newJob.title}"`);
+                });
+
+                ui.hideModal('post-job-modal');
+                ui.render();
+                notifications.showToast("Job posted successfully!");
+            },
+            handleEditProfile: async (e) => {
+                e.preventDefault();
+                const updates = {
+                    displayName: document.getElementById('profile-displayName').value,
+                };
+                
+                const photoFile = document.getElementById('profile-photo').files[0];
+                if (photoFile) {
+                    updates.photoDataURL = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(photoFile);
+                    });
+                }
+
+                if (state.currentUser.role === 'freelancer') {
+                    updates.skills = Array.from(document.querySelectorAll('#profile-skills-checklist input:checked')).map(el => el.value);
+                    updates.bio = document.getElementById('profile-bio').value;
+                }
+                
+                auth.updateUser(state.currentUser.id, updates);
+                ui.hideModal('edit-profile-modal');
+                ui.render();
+                notifications.showToast("Profile updated successfully!");
+            },
+            handleAddDocument: async (e) => {
+                e.preventDefault();
+                const docName = document.getElementById('document-name').value;
+                const docFile = document.getElementById('document-file').files[0];
+
+                if (!docName || !docFile) {
+                    notifications.showToast("Please provide both a name and a file.");
+                    return;
+                }
+
+                const newDoc = {
+                    id: Date.now(),
+                    name: docName,
+                    fileName: docFile.name,
+                    // In a real app, you would upload this file to a server/storage
+                    // and store the URL. For localStorage, we'll store the data URL.
+                    dataURL: await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.readAsDataURL(docFile);
+                    })
+                };
+
+                const user = state.currentUser;
+                if (!user.documents) {
+                    user.documents = [];
+                }
+                user.documents.push(newDoc);
+                auth.updateUser(user.id, { documents: user.documents });
+
+                document.getElementById('add-document-form').reset();
+                ui.renderDocumentList();
+                notifications.showToast("Document added!");
+            },
+            handleDeleteDocument: (docId) => {
+                const user = state.currentUser;
+                const docIndex = user.documents.findIndex(d => d.id === docId);
+                if (docIndex > -1) {
+                    user.documents.splice(docIndex, 1);
+                    auth.updateUser(user.id, { documents: user.documents });
+                    ui.renderDocumentList();
+                    notifications.showToast("Document removed.");
+                }
+            },
+            handleAvailabilityToggle: async (e) => {
+                e.preventDefault();
+                const user = state.currentUser;
+                const isGoingOnline = user.availability === 'away';
+
+                if (isGoingOnline) {
+                    await notifications.requestPermission();
+                    if (!user.lastKnownLocation) {
+                        ui.showModal('set-location-modal');
+                        return;
+                    }
+                }
+                
+                const newStatus = isGoingOnline ? 'available' : 'away';
+                auth.updateUser(user.id, { availability: newStatus });
+                ui.render();
+                notifications.showToast(isGoingOnline ? "You are now online and visible for jobs." : "You are now offline.");
+            },
+            handleAutoDetectLocation: async () => {
+                try {
+                    const location = await geo.requestLocation();
+                    auth.updateUser(state.currentUser.id, { lastKnownLocation: location });
+                    ui.hideModal('set-location-modal');
+                    // After setting location, complete the "go online" action
+                    auth.updateUser(state.currentUser.id, { availability: 'available' });
+                    ui.render();
+                    notifications.showToast("Location updated and you are now online!");
+                } catch (error) {
+                    notifications.showToast(error);
+                }
+            },
+            handleManualLocation: (e) => {
+                e.preventDefault();
+                const areaName = document.getElementById('manual-area-name').value.toLowerCase().trim();
+                const location = AREA_COORDINATES[areaName] || AREA_COORDINATES['default'];
+                
+                auth.updateUser(state.currentUser.id, { lastKnownLocation: location });
+                ui.hideModal('set-location-modal');
+                auth.updateUser(state.currentUser.id, { availability: 'available' });
+                ui.render();
+                notifications.showToast("Location updated and you are now online!");
+            },
+            handleApplyForJob: (jobId) => {
+                const jobIndex = state.db.jobs.findIndex(j => j.id === jobId);
+                if (jobIndex === -1) return;
+                
+                const job = state.db.jobs[jobIndex];
+                const alreadyApplied = job.applicants.some(app => app.freelancerId === state.currentUser.id);
+
+                if (job.status !== 'open' || alreadyApplied) {
+                    notifications.showToast(alreadyApplied ? "You have already applied for this job." : "This job is no longer available.");
+                    return;
+                }
+                
+                job.applicants.push({
+                    freelancerId: state.currentUser.id,
+                    appliedAtISO: new Date().toISOString()
+                });
+                storage.saveDB(state.db);
+                
+                notifications.create(job.clientId, `${state.currentUser.displayName} has applied for your job: "${job.title}".`);
+                notifications.showToast("Application submitted!");
+                ui.render();
+            },
+            handleHireFreelancer: (jobId, freelancerId) => {
+                const jobIndex = state.db.jobs.findIndex(j => j.id === jobId);
+                if (jobIndex === -1) return;
+                
+                const job = state.db.jobs[jobIndex];
+                if (job.assignedFreelancers.length >= job.positionsNeeded) {
+                    notifications.showToast("All positions for this job are filled.");
+                    return;
+                }
+
+                job.assignedFreelancers.push(freelancerId);
+                
+                if (job.assignedFreelancers.length >= job.positionsNeeded) {
+                    job.status = 'assigned';
+                }
+                
+                storage.saveDB(state.db);
+                
+                notifications.create(freelancerId, `You have been hired for the job: "${job.title}"!`);
+                notifications.showToast("Freelancer hired!");
+                
+                // Re-render the applicants modal to update its state
+                ui.renderApplicantsModal(jobId);
+                // Also re-render the main dashboard to update the job card
+                ui.render();
+            },
+            handleCompleteJob: (jobId) => {
+                const jobIndex = state.db.jobs.findIndex(j => j.id === jobId);
+                if (jobIndex === -1) return;
+
+                state.db.jobs[jobIndex].status = 'completed';
+                storage.saveDB(state.db);
+                
+                // Notify all hired freelancers
+                state.db.jobs[jobIndex].assignedFreelancers.forEach(fId => {
+                    notifications.create(fId, `Your job "${state.db.jobs[jobIndex].title}" has been marked as completed by the client.`);
+                });
+                notifications.showToast("Job marked as complete. You can now rate and pay the staff.");
+                ui.render();
+            },
+            handleShowRateModal: (jobId, freelancerId) => {
+                document.getElementById('rate-job-id').value = jobId;
+                document.getElementById('rate-freelancer-id').value = freelancerId;
+                ui.showModal('rate-freelancer-modal');
+            },
+            handleRateFreelancer: (e) => {
+                e.preventDefault();
+                const jobId = document.getElementById('rate-job-id').value;
+                const freelancerId = document.getElementById('rate-freelancer-id').value;
+                const stars = parseInt(document.querySelector('#rate-freelancer-modal .rating-stars').dataset.rating, 10);
+                const text = document.getElementById('review-text').value;
+
+                if (stars === 0) {
+                    notifications.showToast("Please select a star rating.");
+                    return;
+                }
+
+                const newReview = {
+                    id: `review-${Date.now()}`,
+                    jobId,
+                    fromUserId: state.currentUser.id,
+                    toUserId: freelancerId,
+                    fromRole: 'client',
+                    stars,
+                    text,
+                    createdAtISO: new Date().toISOString(),
+                };
+                state.db.reviews.push(newReview);
+                
+                // Update freelancer's average rating
+                const freelancer = state.db.users.find(u => u.id === freelancerId);
+                const totalStars = (freelancer.avgRating * freelancer.ratingsCount) + stars;
+                const newRatingsCount = freelancer.ratingsCount + 1;
+                const newAvgRating = totalStars / newRatingsCount;
+                
+                auth.updateUser(freelancerId, {
+                    avgRating: parseFloat(newAvgRating.toFixed(2)),
+                    ratingsCount: newRatingsCount,
+                });
+                
+                storage.saveDB(state.db);
+                ui.hideModal('rate-freelancer-modal');
+                ui.render();
+                notifications.showToast("Review submitted. Thank you!");
+            },
+            handleShowRateOrganizerModal: (jobId, organizerId) => {
+                document.getElementById('rate-organizer-job-id').value = jobId;
+                document.getElementById('rate-organizer-id').value = organizerId;
+                ui.showModal('rate-organizer-modal');
+            },
+            handleRateOrganizer: (e) => {
+                e.preventDefault();
+                const jobId = document.getElementById('rate-organizer-job-id').value;
+                const organizerId = document.getElementById('rate-organizer-id').value;
+                const stars = parseInt(document.querySelector('#rate-organizer-modal .rating-stars').dataset.rating, 10);
+                const text = document.getElementById('organizer-review-text').value;
+
+                if (stars === 0) {
+                    notifications.showToast("Please select a star rating.");
+                    return;
+                }
+
+                const newReview = {
+                    id: `review-${Date.now()}`,
+                    jobId,
+                    fromUserId: state.currentUser.id,
+                    toUserId: organizerId,
+                    fromRole: 'freelancer',
+                    stars,
+                    text,
+                    createdAtISO: new Date().toISOString(),
+                };
+                state.db.reviews.push(newReview);
+                
+                const organizer = state.db.users.find(u => u.id === organizerId);
+                const totalStars = (organizer.avgRating * organizer.ratingsCount) + stars;
+                const newRatingsCount = organizer.ratingsCount + 1;
+                const newAvgRating = totalStars / newRatingsCount;
+                
+                auth.updateUser(organizerId, {
+                    avgRating: parseFloat(newAvgRating.toFixed(2)),
+                    ratingsCount: newRatingsCount,
+                });
+                
+                storage.saveDB(state.db);
+                ui.hideModal('rate-organizer-modal');
+                ui.render();
+                notifications.showToast("Review for organizer submitted. Thank you!");
+            },
+            handleShowReportIssueModal: (jobId) => {
+                document.getElementById('report-job-id').value = jobId;
+                ui.showModal('report-issue-modal');
+            },
+            handleReportIssue: (e) => {
+                e.preventDefault();
+                const jobId = document.getElementById('report-job-id').value;
+                const issueText = document.getElementById('issue-text').value;
+
+                const newDispute = {
+                    id: `dispute-${Date.now()}`,
+                    jobId,
+                    reporterId: state.currentUser.id,
+                    issueText,
+                    createdAtISO: new Date().toISOString(),
+                    status: 'open',
+                };
+                state.db.disputes.push(newDispute);
+                storage.saveDB(state.db);
+                
+                ui.hideModal('report-issue-modal');
+                ui.render();
+                notifications.showToast("Issue reported. An admin will review it shortly.");
+            },
+            handlePayment: (jobId) => {
+                const job = state.db.jobs.find(j => j.id === jobId);
+                const client = state.currentUser;
+                const totalBudget = job.budget * job.assignedFreelancers.length;
+
+                if (client.wallet < totalBudget) {
+                    notifications.showToast("Insufficient funds to pay all staff. Please load your wallet.");
+                    return;
+                }
+
+                // Perform transaction for each freelancer
+                auth.updateUser(client.id, { wallet: client.wallet - totalBudget });
+                job.assignedFreelancers.forEach(fId => {
+                    const freelancer = state.db.users.find(u => u.id === fId);
+                    if (freelancer) {
+                        auth.updateUser(fId, { wallet: freelancer.wallet + job.budget });
+                        notifications.create(fId, `You have been paid ZAR ${job.budget.toFixed(2)} for the job "${job.title}".`);
+                    }
+                });
+                
+                // Update job status
+                const jobIndex = state.db.jobs.findIndex(j => j.id === jobId);
+                state.db.jobs[jobIndex].status = 'paid';
+                storage.saveDB(state.db);
+
+                notifications.showToast("Payment successful! All staff have been paid.");
+                ui.render();
+            },
+            handleLoadFunds: (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('load-amount').value);
+                if (amount > 0) {
+                    const newBalance = state.currentUser.wallet + amount;
+                    auth.updateUser(state.currentUser.id, { wallet: newBalance });
+                    document.getElementById('modal-wallet-balance').textContent = `ZAR ${newBalance.toFixed(2)}`;
+                    document.getElementById('wallet-balance').textContent = newBalance.toFixed(2);
+                    document.getElementById('load-funds-form').reset();
+                    notifications.showToast(`ZAR ${amount.toFixed(2)} added to your wallet.`);
+                }
+            },
+            handleOpenChat: (jobId) => {
+                const chat = state.db.chats.find(c => c.jobId === jobId);
+                if (!chat) return; // Should not happen if created on application
+
+                const chatMessagesContainer = document.getElementById('chat-messages');
+                chatMessagesContainer.innerHTML = '';
+                chat.messages.forEach(msg => {
+                    const messageEl = document.createElement('div');
+                    messageEl.className = `chat-message ${msg.senderId === state.currentUser.id ? 'sent' : 'received'}`;
+                    const time = new Date(msg.timestampISO).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    messageEl.innerHTML = `${msg.text}<span class="timestamp">${time}</span>`;
+                    chatMessagesContainer.appendChild(messageEl);
+                });
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+                document.getElementById('chat-title').textContent = `Group Chat`;
+                
+                const chatForm = document.getElementById('chat-form');
+                const newChatForm = chatForm.cloneNode(true);
+                chatForm.parentNode.replaceChild(newChatForm, chatForm);
+                newChatForm.addEventListener('submit', (e) => handlers.handleSendMessage(e, jobId));
+
+                // Mark notifications as read
+                state.db.notifications.forEach(n => {
+                    if (n.type === 'chat' && n.relatedId === jobId && n.userId === state.currentUser.id) {
+                        n.read = true;
+                    }
+                });
+                storage.saveDB(state.db);
+                ui.render(); // Re-render to remove notification badge
+                ui.showModal('chat-modal');
+            },
+            handleSendMessage: (e, jobId) => {
+                e.preventDefault();
+                const input = document.getElementById('chat-message-input');
+                const text = input.value.trim();
+                if (!text) return;
+
+                const chat = state.db.chats.find(c => c.jobId === jobId);
+                if (!chat) return;
+
+                const newMessage = {
+                    senderId: state.currentUser.id,
+                    text,
+                    timestampISO: new Date().toISOString(),
+                };
+                chat.messages.push(newMessage);
+                storage.saveDB(state.db);
+                
+                input.value = '';
+                
+                // Re-render messages in the currently open modal
+                const chatMessagesContainer = document.getElementById('chat-messages');
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message sent`;
+                const time = new Date(newMessage.timestampISO).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                messageEl.innerHTML = `${newMessage.text}<span class="timestamp">${time}</span>`;
+                chatMessagesContainer.appendChild(messageEl);
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+                // Notify all participants in the chat (client and all assigned freelancers)
+                const job = state.db.jobs.find(j => j.id === jobId);
+                const participants = [job.clientId, ...job.assignedFreelancers];
+                participants.forEach(pId => {
+                    if (pId !== state.currentUser.id) {
+                        notifications.create(pId, `New message from ${state.currentUser.displayName}: "${text}"`, 'chat', jobId);
+                    }
+                });
+            }
+        };
+
+        // --- APP INITIALIZATION ---
+        function init() {
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('swiftStaffTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            console.log("SwiftStaff App Initializing...");
+            state.db = storage.getDB();
+            ui.render();
+        }
+
+        // --- START THE APP ---
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
