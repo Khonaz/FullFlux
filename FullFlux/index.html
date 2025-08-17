@@ -704,13 +704,19 @@
                     </div>
                     <hr style="margin: 1rem 0;">
                     <div class="form-group">
-                        <label>My Documents</label>
+                        <label>My Documents & Verification</label>
                         <div id="documents-list" style="margin-bottom: 1rem;"></div>
-                        <form id="add-document-form" style="display: flex; gap: 0.5rem;">
-                            <input type="text" id="document-name" class="form-control" placeholder="Document Name (e.g. Security License)" required>
-                            <input type="file" id="document-file" class="form-control" required>
+                        <form id="add-document-form" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <input type="text" id="document-name" class="form-control" placeholder="Document Name (e.g. ID Document)" required style="flex-grow: 1;">
+                            <input type="file" id="document-file" class="form-control" required style="flex-grow: 1;">
                             <button type="submit" class="btn btn-secondary">Add</button>
                         </form>
+                    </div>
+                     <div class="form-group">
+                        <label>Premium Background Check</label>
+                         <div id="background-check-status" class="card" style="padding: 1rem;">
+                            <!-- Background check status will be shown here -->
+                         </div>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
@@ -815,7 +821,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module">
         // --- CONFIG & CONSTANTS ---
-        const DB_VERSION = '1.0.1'; // Updated version
+        const DB_VERSION = '1.0.2'; // Updated version for verification feature
         const STORAGE_KEY = 'fullFluxDB';
         const SKILLS = {
             "Event Logistics & Setup": ["stagehand", "rigger", "security", "logistics-coordinator", "setup-crew"],
@@ -874,7 +880,7 @@
                     notifications: [],
                     chats: [],
                     disputes: [],
-                    cancellations: [], // NEW: To log cancellations
+                    cancellations: [], 
                 };
                 storage.seedData(db);
                 storage.saveDB(db);
@@ -884,12 +890,12 @@
                 const now = new Date('2025-08-16T15:35:00+02:00');
 
                 const freelancers = [
-                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender with a passion for mixology. Punctual, professional, and great with customers.", documents: [] }, 
-                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient event staff, perfect for registration desks and setup tasks. Quick learner.", documents: [] },
-                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team. We ensure every venue is spotless post-event. Reliable and thorough.", documents: [] },
-                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador and experienced waitress. I bring energy and a smile to every event.", documents: [] },
-                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit. I'm your guy for setup, teardown, and logistics.", documents: [] },
-                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel and a skilled bartender. I can ensure your event is both safe and enjoyable.", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf"}] },
+                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender with a passion for mixology. Punctual, professional, and great with customers.", documents: [], backgroundCheckStatus: 'none' }, 
+                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient event staff, perfect for registration desks and setup tasks. Quick learner.", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none' },
+                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team. We ensure every venue is spotless post-event. Reliable and thorough.", documents: [], backgroundCheckStatus: 'none' },
+                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador and experienced waitress. I bring energy and a smile to every event.", documents: [], backgroundCheckStatus: 'none' },
+                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit. I'm your guy for setup, teardown, and logistics.", documents: [], backgroundCheckStatus: 'none' },
+                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel and a skilled bartender. I can ensure your event is both safe and enjoyable.", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified' },
                 ];
                 db.users.push(...freelancers);
 
@@ -961,6 +967,7 @@
                     newUser.skills = [];
                     newUser.availability = "away";
                     newUser.documents = [];
+                    newUser.backgroundCheckStatus = 'none'; // 'none', 'pending', 'verified', 'failed'
                 }
                 state.db.users.push(newUser);
                 storage.saveDB(state.db);
@@ -1437,6 +1444,37 @@
 
                 jobListContainer.appendChild(table);
             },
+            renderMapView: () => {
+                const root = document.getElementById('app-root');
+                const template = document.getElementById('map-view-template').content.cloneNode(true);
+                root.appendChild(template);
+
+                document.getElementById('list-view-btn').addEventListener('click', () => {
+                    state.currentView = 'dashboard';
+                    ui.render();
+                });
+
+                const map = L.map('map').setView([-26.15, 28.05], 11); // Centered on Johannesburg
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                const eligibleJobs = matching.findEligibleJobsFor(state.currentUser);
+                eligibleJobs.forEach(job => {
+                    L.marker([job.location.lat, job.location.lng])
+                        .addTo(map)
+                        .bindPopup(`<b>${job.title}</b><br>${job.location.areaName}<br>Budget: R${job.budget}`);
+                });
+
+                if (state.currentUser.lastKnownLocation) {
+                    L.circle([state.currentUser.lastKnownLocation.lat, state.currentUser.lastKnownLocation.lng], {
+                        color: 'blue',
+                        fillColor: '#30f',
+                        fillOpacity: 0.2,
+                        radius: 500
+                    }).addTo(map).bindPopup('Your Location');
+                }
+            },
             renderJobCards: (containerId, jobs) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -1621,6 +1659,7 @@
                                 skillsContainer.innerHTML += categoryHtml;
                             }
                             ui.renderDocumentList();
+                            ui.renderBackgroundCheckStatus();
                         } else {
                             freelancerFields.classList.add('hidden');
                         }
@@ -1667,14 +1706,21 @@
                         applicantEl.style.padding = '0.5rem 0';
                         applicantEl.style.borderBottom = '1px solid var(--border-color)';
 
-                        let certifiedBadge = '';
-                        if (freelancer.documents && freelancer.documents.length > 0) {
-                            certifiedBadge = `<span class="badge badge-success" style="margin-left: 5px;">Certified</span>`;
+                        const isVerified = freelancer.documents && freelancer.documents.some(d => d.status === 'verified');
+                        const isBgChecked = freelancer.backgroundCheckStatus === 'verified';
+                        
+                        let badges = '';
+                        if (isVerified) {
+                             badges += `<span class="badge badge-success" style="margin-left: 5px;">ID Verified</span>`;
                         }
+                         if (isBgChecked) {
+                             badges += `<span class="badge badge-primary" style="margin-left: 5px;">BG Checked</span>`;
+                        }
+
 
                         applicantEl.innerHTML = `
                             <div>
-                                <strong>${freelancer.displayName}</strong> ${certifiedBadge}<br>
+                                <strong>${freelancer.displayName}</strong> ${badges}<br>
                                 <small class="text-muted">Rating: ${freelancer.avgRating} ★ (${freelancer.ratingsCount} reviews)</small>
                             </div>
                         `;
@@ -1708,19 +1754,62 @@
                         docEl.style.justifyContent = 'space-between';
                         docEl.style.alignItems = 'center';
                         docEl.style.marginBottom = '0.5rem';
+                        docEl.style.padding = '0.5rem';
+                        docEl.style.borderRadius = '8px';
+                        docEl.style.backgroundColor = 'rgba(0,0,0,0.05)';
+
+                        const statusColors = { pending: 'warning', verified: 'success', rejected: 'danger' };
+                        const statusBadge = `<span class="badge badge-${statusColors[doc.status] || 'secondary'}">${doc.status}</span>`;
+
                         docEl.innerHTML = `
-                            <span><strong>${doc.name}</strong> (${doc.fileName})</span>
-                            <button class="btn btn-danger btn-sm" data-doc-id="${doc.id}">&times;</button>
+                            <div>
+                                <strong>${doc.name}</strong> (${doc.fileName})
+                                ${statusBadge}
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary btn-sm" data-doc-id="${doc.id}" title="Simulate Admin Verification">Verify</button>
+                                <button class="btn btn-danger btn-sm" data-doc-id="${doc.id}" title="Delete Document">&times;</button>
+                            </div>
                         `;
-                        docEl.querySelector('button').addEventListener('click', (e) => {
-                            const docId = parseInt(e.target.dataset.docId, 10);
+                        docEl.querySelector('.btn-danger').addEventListener('click', (e) => {
+                            const docId = parseInt(e.currentTarget.dataset.docId, 10);
                             handlers.handleDeleteDocument(docId);
+                        });
+                         docEl.querySelector('.btn-secondary').addEventListener('click', (e) => {
+                            const docId = parseInt(e.currentTarget.dataset.docId, 10);
+                            handlers.handleAdminVerifyDocument(docId);
                         });
                         listEl.appendChild(docEl);
                     });
                 } else {
                     listEl.innerHTML = '<p class="text-muted">No documents uploaded.</p>';
                 }
+            },
+            renderBackgroundCheckStatus: () => {
+                const user = state.currentUser;
+                const container = document.getElementById('background-check-status');
+                let content = '';
+
+                switch(user.backgroundCheckStatus) {
+                    case 'verified':
+                        content = `<p class="text-success"><strong>Status: Verified.</strong> Your background check is complete and approved.</p>`;
+                        break;
+                    case 'pending':
+                        content = `<p class="text-warning"><strong>Status: Pending.</strong> Your background check is being processed.</p>`;
+                        break;
+                     case 'failed':
+                        content = `<p class="text-danger"><strong>Status: Failed.</strong> Please contact support for more information.</p>`;
+                        break;
+                    case 'none':
+                    default:
+                        content = `
+                            <p class="text-muted">Gain more trust and access to sensitive jobs by completing a background check.</p>
+                            <button id="start-bg-check-btn" class="btn btn-primary btn-block" style="margin-top: 10px;">Start Background Check (Paid)</button>
+                        `;
+                        break;
+                }
+                container.innerHTML = content;
+                document.getElementById('start-bg-check-btn')?.addEventListener('click', handlers.handleStartBackgroundCheck);
             },
             hideModal: (modalId) => {
                 const modal = document.getElementById(modalId);
@@ -1868,6 +1957,7 @@
                     id: Date.now(),
                     name: docName,
                     fileName: docFile.name,
+                    status: 'pending', // Initial status
                     dataURL: await new Promise(resolve => {
                         const reader = new FileReader();
                         reader.onload = e => resolve(e.target.result);
@@ -1884,7 +1974,7 @@
 
                 document.getElementById('add-document-form').reset();
                 ui.renderDocumentList();
-                notifications.showToast("Document added!");
+                notifications.showToast("Document uploaded for verification.");
             },
             handleDeleteDocument: (docId) => {
                 const user = state.currentUser;
@@ -1895,6 +1985,33 @@
                     ui.renderDocumentList();
                     notifications.showToast("Document removed.");
                 }
+            },
+            handleAdminVerifyDocument: (docId) => {
+                // This is a simulation of an admin action
+                const user = state.currentUser;
+                const docIndex = user.documents.findIndex(d => d.id === docId);
+                 if (docIndex > -1) {
+                    user.documents[docIndex].status = 'verified';
+                    auth.updateUser(user.id, { documents: user.documents });
+                    ui.renderDocumentList();
+                    notifications.showToast(`${user.documents[docIndex].name} has been verified!`);
+                }
+            },
+            handleStartBackgroundCheck: () => {
+                // This is a simulation
+                notifications.showToast("Redirecting to our trusted partner for background check...");
+                setTimeout(() => {
+                    auth.updateUser(state.currentUser.id, { backgroundCheckStatus: 'pending' });
+                    notifications.showToast("Your background check is now pending.");
+                    ui.renderBackgroundCheckStatus();
+                    
+                    // Simulate completion after a delay
+                    setTimeout(() => {
+                         auth.updateUser(state.currentUser.id, { backgroundCheckStatus: 'verified' });
+                         notifications.showToast("Your background check has been successfully verified!");
+                         ui.renderBackgroundCheckStatus();
+                    }, 10000); // 10 seconds for demo
+                }, 2000);
             },
             handleAvailabilityToggle: async (e) => {
                 e.preventDefault();
@@ -2146,7 +2263,6 @@
                     notifications.showToast(`ZAR ${amount.toFixed(2)} added to your wallet.`);
                 }
             },
-            // --- NEW CANCELLATION HANDLERS ---
             promptForCancellation: (jobId) => {
                 const job = state.db.jobs.find(j => j.id === jobId);
                 const user = state.currentUser;
