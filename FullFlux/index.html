@@ -477,7 +477,7 @@
             <p><strong>Positions:</strong> <span class="job-positions"></span></p>
             <p><strong>Status:</strong> <span class="badge job-status"></span></p>
             <div class="job-timer-wrapper">
-                <strong>Expires in:</strong> <span class="countdown-timer"></span>
+                <strong>Starts in:</strong> <span class="countdown-timer"></span>
             </div>
             <div class="job-actions" style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
                 <!-- Action buttons will be added here -->
@@ -542,6 +542,10 @@
                     <label for="job-requirements">Requirements</label>
                     <textarea id="job-requirements" class="form-control" rows="2" placeholder="e.g., Black tie attire, own transport..."></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="job-briefing">Job Briefing / Checklist (Optional)</label>
+                    <textarea id="job-briefing" class="form-control" rows="4" placeholder="e.g., Dress Code: All black. Report to Jane Doe at the main entrance. Be prepared for a fast-paced environment."></textarea>
+                </div>
                  <div class="form-group">
                     <label for="job-contact-person">On-site Contact Person</label>
                     <input type="text" id="job-contact-person" class="form-control" placeholder="e.g., Jane Doe - 082 123 4567">
@@ -562,6 +566,10 @@
                         <input type="number" id="job-positions" class="form-control" required min="1" value="1">
                     </div>
                 </div>
+                 <div class="form-group">
+                    <label for="job-start-time">Job Start Time</label>
+                    <input type="datetime-local" id="job-start-time" class="form-control" required>
+                </div>
                 <div class="form-group">
                     <label for="job-location-name">Area Name</label>
                     <input type="text" id="job-location-name" class="form-control" required placeholder="e.g., Sandton, Rosebank, etc.">
@@ -570,11 +578,10 @@
                     <label for="job-radius">Search Radius (km)</label>
                     <input type="number" id="job-radius" class="form-control" required value="15">
                 </div>
-                <div class="form-group">
-                    <label for="job-expiry">Expires in (minutes)</label>
-                    <input type="number" id="job-expiry" class="form-control" required value="60">
+                <div id="fee-calculation" class="card" style="margin-top: 1rem; background-color: rgba(0,0,0,0.05);">
+                    <!-- Fee calculation will be displayed here -->
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Post Job</button>
+                <button type="submit" class="btn btn-primary btn-block">Post Job & Escrow Funds</button>
             </form>
         </div>
     </div>
@@ -696,6 +703,9 @@
                     <img id="profile-photo-preview" src="" alt="Photo Preview" class="hidden" style="max-width: 100px; margin-top: 10px; border-radius: 50%;">
                 </div>
                 <div id="freelancer-fields">
+                    <div id="reliability-score-section" class="card" style="padding: 1rem; text-align: center;">
+                        <!-- Reliability score details here -->
+                    </div>
                     <div class="form-group">
                         <label>Skills</label>
                         <div id="profile-skills-checklist">
@@ -762,6 +772,20 @@
                     <button type="submit" class="btn btn-success btn-block">Load Funds</button>
                 </form>
             </div>
+            <div id="payout-funds-section" class="hidden">
+                <hr style="margin: 1rem 0;">
+                <h4>Instant Payout</h4>
+                <form id="payout-funds-form">
+                    <div class="form-group">
+                        <label for="payout-amount">Amount (ZAR)</label>
+                        <input type="number" id="payout-amount" class="form-control" min="50" required>
+                    </div>
+                    <div id="payout-calculation" class="card" style="padding: 1rem; margin-bottom: 1rem; background-color: rgba(0,0,0,0.05);">
+                        <!-- Payout calculation details here -->
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Cash Out</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -781,6 +805,30 @@
         </div>
     </div>
 
+    <div id="briefing-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="briefing-title">Job Briefing</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div id="briefing-content" style="white-space: pre-wrap; background-color: rgba(0,0,0,0.05); padding: 1rem; border-radius: var(--border-radius); margin-bottom: 1.5rem;"></div>
+            <button id="acknowledge-briefing-btn" class="btn btn-success btn-block">I Acknowledge and Understand</button>
+        </div>
+    </div>
+
+    <div id="check-in-modal" class="modal hidden">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <h2 class="modal-title">Job Check-in</h2>
+                 <button class="close-button">&times;</button>
+            </div>
+            <p>Show this QR code to the event organizer to check in.</p>
+            <div id="qr-code-placeholder" style="width: 200px; height: 200px; margin: 1rem auto; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: var(--border-radius);">
+                [QR Code]
+            </div>
+        </div>
+    </div>
+
     <!-- NEW: Cancellation Policy Modal -->
     <div id="cancellation-policy-modal" class="modal hidden">
         <div class="modal-content">
@@ -792,7 +840,7 @@
             <p class="text-muted">Cancelling a job you have been assigned to has consequences:</p>
             <ul>
                 <li>A <strong>25% penalty fee</strong> (based on the job budget) will be deducted from your wallet.</li>
-                <li>This action will be noted on your profile and may affect future job opportunities.</li>
+                <li>Your <strong>Reliability Score</strong> will be significantly impacted.</li>
             </ul>
             <hr style="margin: 1rem 0;">
             <h4>For Clients (Organizers)</h4>
@@ -821,8 +869,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module">
         // --- CONFIG & CONSTANTS ---
-        const DB_VERSION = '1.0.2'; // Updated version for verification feature
+        const DB_VERSION = '1.0.6'; // Updated version for reliability score
         const STORAGE_KEY = 'fullFluxDB';
+        const PLATFORM_COMMISSION = 0.20; // 20%
+        const PAYOUT_FEE_PERCENTAGE = 2.5; // 2.5%
         const SKILLS = {
             "Event Logistics & Setup": ["stagehand", "rigger", "security", "logistics-coordinator", "setup-crew"],
             "Event Staff & Services": ["bartender", "waitstaff", "registration", "brand-ambassador", "performer"],
@@ -881,6 +931,7 @@
                     chats: [],
                     disputes: [],
                     cancellations: [], 
+                    platformWallet: 0,
                 };
                 storage.seedData(db);
                 storage.saveDB(db);
@@ -890,12 +941,12 @@
                 const now = new Date('2025-08-16T15:35:00+02:00');
 
                 const freelancers = [
-                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender with a passion for mixology. Punctual, professional, and great with customers.", documents: [], backgroundCheckStatus: 'none' }, 
-                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient event staff, perfect for registration desks and setup tasks. Quick learner.", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none' },
-                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team. We ensure every venue is spotless post-event. Reliable and thorough.", documents: [], backgroundCheckStatus: 'none' },
-                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador and experienced waitress. I bring energy and a smile to every event.", documents: [], backgroundCheckStatus: 'none' },
-                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit. I'm your guy for setup, teardown, and logistics.", documents: [], backgroundCheckStatus: 'none' },
-                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel and a skilled bartender. I can ensure your event is both safe and enjoyable.", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified' },
+                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0 }, 
+                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0 },
+                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1 },
+                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0 },
+                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2 },
+                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0 },
                 ];
                 db.users.push(...freelancers);
 
@@ -907,12 +958,12 @@
                 db.users.push(...clients);
 
                 const jobs = [
-                    { id: `job-1`, title: "Urgent Bartenders for Gala", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", budget: 1500, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], expiresAtISO: new Date(now.getTime() + 30 * 60 * 1000).toISOString() }, 
-                    { id: `job-2`, title: "Music Festival Setup Crew", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", budget: 800, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], expiresAtISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString() },
-                    { id: `job-3`, title: "Corporate Event Greeters", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", budget: 750, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], expiresAtISO: new Date(now.getTime() - 22 * 60 * 60 * 1000).toISOString() }, 
-                    { id: `job-4`, title: "Post-Wedding Cleanup", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", budget: 600, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], expiresAtISO: new Date(now.getTime() - 7 * 60 * 60 * 1000).toISOString() },
-                    { id: `job-5`, title: "Charity Fun Run Marshals", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", budget: 500, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], expiresAtISO: new Date(now.getTime() - (7 * 24 - 1) * 60 * 60 * 1000).toISOString() },
-                    { id: `job-6`, title: "New Year's Eve Security", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", budget: 2000, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], expiresAtISO: new Date('2025-01-01T01:00:00+02:00').toISOString() },
+                    { id: `job-1`, title: "Urgent Bartenders for Gala", briefing: "- Dress code: All black, formal.\n- Report to Maria at the main bar.\n- Familiarize yourself with our signature cocktail menu upon arrival.", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", budget: 1500, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 1.5 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 525, totalBudget: 3525 }, 
+                    { id: `job-2`, title: "Music Festival Setup Crew", briefing: "", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", budget: 800, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 14 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 1200, totalBudget: 9200 },
+                    { id: `job-3`, title: "Corporate Event Greeters", briefing: "Meet Thabo at the registration desk 30 minutes prior to event start. Attire is business professional. Main duty is to check-in guests via the provided tablets.", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", budget: 750, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], acknowledgedBriefing: [freelancers[1].id], checkedIn: [], urgencyFee: 0, totalBudget: 2250 }, 
+                    { id: `job-4`, title: "Post-Wedding Cleanup", briefing: "", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", budget: 600, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 2400 },
+                    { id: `job-5`, title: "Charity Fun Run Marshals", briefing: "", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", budget: 500, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - (7 * 24 - 2) * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 1000 },
+                    { id: `job-6`, title: "New Year's Eve Security", briefing: "Stationed at main entrance. Check IDs and wristbands. Radio contact is channel 3. Report any issues to the event manager on duty.", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", budget: 2000, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), startTimeISO: new Date('2025-01-01T20:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], acknowledgedBriefing: [freelancers[5].id], checkedIn: [], urgencyFee: 0, totalBudget: 2000 },
                 ];
                 db.jobs.push(...jobs);
 
@@ -968,6 +1019,9 @@
                     newUser.availability = "away";
                     newUser.documents = [];
                     newUser.backgroundCheckStatus = 'none'; // 'none', 'pending', 'verified', 'failed'
+                    newUser.reliabilityScore = 100;
+                    newUser.jobsCompleted = 0;
+                    newUser.cancellationsCount = 0;
                 }
                 state.db.users.push(newUser);
                 storage.saveDB(state.db);
@@ -1031,7 +1085,7 @@
                 }
                 const now = new Date();
                 return state.db.jobs.filter(job => {
-                    const isExpired = new Date(job.expiresAtISO) < now;
+                    const isExpired = new Date(job.startTimeISO) < now;
                     if (job.status !== 'open' || isExpired) {
                         if (job.status === 'open' && isExpired) {
                             // Expire the job
@@ -1222,7 +1276,7 @@
                     <a href="#" id="cancellation-policy-link">Policy</a>
                     <a href="#" id="logout-link">Logout</a>
                     <button id="reset-data-btn" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Reset Demo</button>
-                    <button id="theme-toggle-btn" class="theme-toggle">${isDarkMode ? '☀️' : '🌙'}</button>
+                    <button id="theme-toggle-btn" class="theme-toggle">${isDarkMode ? '☀️' : '�'}</button>
                 `;
 
                 document.getElementById('logout-link').addEventListener('click', (e) => {
@@ -1312,7 +1366,7 @@
                 
                 const jobs = state.db.jobs.filter(j => j.clientId === state.currentUser.id);
                 
-                const openJobs = jobs.filter(j => j.status === 'open' && new Date(j.expiresAtISO) > new Date());
+                const openJobs = jobs.filter(j => j.status === 'open' && new Date(j.startTimeISO) > new Date());
                 const assignedJobs = jobs.filter(j => j.status === 'assigned');
                 const completedJobs = jobs.filter(j => ['completed', 'paid'].includes(j.status));
                 const archivedJobs = jobs.filter(j => ['expired', 'cancelled'].includes(j.status));
@@ -1527,7 +1581,7 @@
                 const timerEl = card.querySelector('.countdown-timer');
                 if (job.status === 'open') {
                     const updateTimer = () => {
-                        const timeLeft = new Date(job.expiresAtISO) - new Date();
+                        const timeLeft = new Date(job.startTimeISO) - new Date();
                         if (timeLeft <= 0) {
                             timerEl.textContent = 'Expired';
                             card.querySelector('.job-status').textContent = 'expired';
@@ -1539,9 +1593,9 @@
                                 state.timers.splice(timerIndex, 1);
                             }
                         } else {
+                            const hours = Math.floor((timeLeft / (1000 * 60 * 60)));
                             const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
-                            const seconds = Math.floor((timeLeft / 1000) % 60);
-                            timerEl.textContent = `${minutes}m ${seconds}s`;
+                            timerEl.textContent = `${hours}h ${minutes}m`;
                         }
                     };
                     updateTimer();
@@ -1567,11 +1621,30 @@
                         }
                         actionsContainer.appendChild(applyBtn);
                     } else if (job.status === 'assigned' && job.assignedFreelancers.includes(state.currentUser.id)) {
+                        const hasAcknowledged = job.acknowledgedBriefing.includes(state.currentUser.id);
+                        const hasBriefing = job.briefing && job.briefing.trim() !== '';
+
+                        if (hasBriefing && !hasAcknowledged) {
+                            const ackBtn = document.createElement('button');
+                            ackBtn.className = 'btn btn-warning';
+                            ackBtn.textContent = 'Acknowledge Briefing';
+                            ackBtn.onclick = () => handlers.handleShowBriefingModal(job.id);
+                            actionsContainer.appendChild(ackBtn);
+                        }
+
+                        const checkInBtn = document.createElement('button');
+                        checkInBtn.className = 'btn btn-success';
+                        checkInBtn.textContent = 'Check-in';
+                        checkInBtn.disabled = hasBriefing && !hasAcknowledged;
+                        checkInBtn.onclick = () => handlers.handleShowCheckInModal(job.id);
+                        actionsContainer.appendChild(checkInBtn);
+
                         const cancelBtn = document.createElement('button');
                         cancelBtn.className = 'btn btn-danger';
                         cancelBtn.textContent = 'Cancel Assignment';
                         cancelBtn.onclick = () => handlers.promptForCancellation(job.id);
                         actionsContainer.appendChild(cancelBtn);
+
                     } else if (['completed', 'paid'].includes(job.status) && job.assignedFreelancers.includes(state.currentUser.id)) {
                         const hasRated = state.db.reviews.some(r => r.jobId === job.id && r.fromUserId === state.currentUser.id);
                         if (!hasRated) {
@@ -1610,6 +1683,16 @@
                     }
                 }
 
+                // Chat button for assigned/completed/paid jobs
+                if (['assigned', 'completed', 'paid'].includes(job.status) && (job.clientId === state.currentUser.id || job.assignedFreelancers.includes(state.currentUser.id))) {
+                    const chatBtn = document.createElement('button');
+                    chatBtn.className = 'btn btn-info chat-btn';
+                    chatBtn.textContent = 'Chat';
+                    chatBtn.dataset.jobId = job.id;
+                    chatBtn.dataset.jobTitle = job.title;
+                    actionsContainer.appendChild(chatBtn);
+                }
+
                 // Report Issue Button for both roles on assigned/completed jobs
                 if (['assigned', 'completed'].includes(job.status) && (job.clientId === state.currentUser.id || job.assignedFreelancers.includes(state.currentUser.id))) {
                     const hasReported = state.db.disputes.some(d => d.jobId === job.id && d.reporterId === state.currentUser.id);
@@ -1642,6 +1725,7 @@
                         const freelancerFields = document.getElementById('freelancer-fields');
                         if (user.role === 'freelancer') {
                             freelancerFields.classList.remove('hidden');
+                            ui.renderReliabilityScore();
                             const skillsContainer = document.getElementById('profile-skills-checklist');
                             skillsContainer.innerHTML = ''; // Clear old skills
                             for (const category in SKILLS) {
@@ -1666,7 +1750,16 @@
                     } else if (modalId === 'wallet-modal') {
                         document.getElementById('modal-wallet-balance').textContent = `ZAR ${state.currentUser.wallet.toFixed(2)}`;
                         const loadFundsSection = document.getElementById('load-funds-section');
-                        loadFundsSection.classList.toggle('hidden', state.currentUser.role !== 'client');
+                        const payoutFundsSection = document.getElementById('payout-funds-section');
+                        if (state.currentUser.role === 'client') {
+                            loadFundsSection.classList.remove('hidden');
+                            payoutFundsSection.classList.add('hidden');
+                        } else {
+                            loadFundsSection.classList.add('hidden');
+                            payoutFundsSection.classList.remove('hidden');
+                            document.getElementById('payout-amount').addEventListener('input', ui.updatePayoutCalculation);
+                            ui.updatePayoutCalculation();
+                        }
                     } else if (modalId === 'post-job-modal') {
                         const categorySelect = document.getElementById('job-category');
                         categorySelect.innerHTML = ''; // Clear old options
@@ -1681,9 +1774,64 @@
                             });
                             categorySelect.appendChild(optgroup);
                         }
+                        // Add listeners for dynamic fee calculation
+                        document.getElementById('job-budget').addEventListener('input', ui.updateFeeCalculation);
+                        document.getElementById('job-start-time').addEventListener('input', ui.updateFeeCalculation);
+                        document.getElementById('job-positions').addEventListener('input', ui.updateFeeCalculation);
+                        ui.updateFeeCalculation(); // Initial calculation
                     }
                     modal.classList.remove('hidden');
                 }
+            },
+            updateFeeCalculation: () => {
+                const container = document.getElementById('fee-calculation');
+                if (!container) return;
+
+                const budgetInput = document.getElementById('job-budget');
+                const startTimeInput = document.getElementById('job-start-time');
+                const positionsInput = document.getElementById('job-positions');
+
+                const budget = parseFloat(budgetInput.value) || 0;
+                const startTime = startTimeInput.value;
+                const positions = parseInt(positionsInput.value) || 1;
+
+                if (budget <= 0 || !startTime) {
+                    container.innerHTML = '<p class="text-muted">Enter a budget and start time to see the cost breakdown.</p>';
+                    return;
+                }
+
+                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions);
+
+                container.innerHTML = `
+                    <h4>Cost Breakdown</h4>
+                    <p>Base Budget: ZAR ${feeDetails.baseBudget.toFixed(2)}</p>
+                    <p>Urgency Fee (${feeDetails.feePercentage}%): <span class="${feeDetails.feeAmount > 0 ? 'text-warning' : ''}">ZAR ${feeDetails.feeAmount.toFixed(2)}</span></p>
+                    <p>Platform Commission (20%): ZAR ${feeDetails.commission.toFixed(2)}</p>
+                    <hr style="margin: 0.5rem 0;">
+                    <p><strong>Total Escrow Amount: ZAR ${feeDetails.totalAmount.toFixed(2)}</strong></p>
+                `;
+            },
+            updatePayoutCalculation: () => {
+                const container = document.getElementById('payout-calculation');
+                if (!container) return;
+
+                const amountInput = document.getElementById('payout-amount');
+                const amount = parseFloat(amountInput.value) || 0;
+
+                if (amount <= 0) {
+                    container.innerHTML = '<p class="text-muted">Enter an amount to see the payout details.</p>';
+                    return;
+                }
+
+                const fee = amount * (PAYOUT_FEE_PERCENTAGE / 100);
+                const receivedAmount = amount - fee;
+
+                container.innerHTML = `
+                    <p>Payout Amount: ZAR ${amount.toFixed(2)}</p>
+                    <p>Processing Fee (${PAYOUT_FEE_PERCENTAGE}%): <span class="text-danger">- ZAR ${fee.toFixed(2)}</span></p>
+                    <hr style="margin: 0.5rem 0;">
+                    <p><strong>You Will Receive: ZAR ${receivedAmount.toFixed(2)}</strong></p>
+                `;
             },
             renderApplicantsModal: (jobId) => {
                 const job = state.db.jobs.find(j => j.id === jobId);
@@ -1695,7 +1843,14 @@
                 if (job.applicants.length === 0) {
                     container.innerHTML = '<p class="text-muted">No applicants yet.</p>';
                 } else {
-                    job.applicants.forEach(applicant => {
+                    // Sort applicants by reliability score (descending)
+                    const sortedApplicants = [...job.applicants].sort((a, b) => {
+                        const freelancerA = state.db.users.find(u => u.id === a.freelancerId);
+                        const freelancerB = state.db.users.find(u => u.id === b.freelancerId);
+                        return (freelancerB.reliabilityScore || 0) - (freelancerA.reliabilityScore || 0);
+                    });
+
+                    sortedApplicants.forEach(applicant => {
                         const freelancer = state.db.users.find(u => u.id === applicant.freelancerId);
                         if (!freelancer) return;
 
@@ -1721,7 +1876,7 @@
                         applicantEl.innerHTML = `
                             <div>
                                 <strong>${freelancer.displayName}</strong> ${badges}<br>
-                                <small class="text-muted">Rating: ${freelancer.avgRating} ★ (${freelancer.ratingsCount} reviews)</small>
+                                <small class="text-muted">Rating: ${freelancer.avgRating} ★ | Reliability: ${freelancer.reliabilityScore}</small>
                             </div>
                         `;
 
@@ -1811,6 +1966,43 @@
                 container.innerHTML = content;
                 document.getElementById('start-bg-check-btn')?.addEventListener('click', handlers.handleStartBackgroundCheck);
             },
+            renderReliabilityScore: () => {
+                const user = state.currentUser;
+                const container = document.getElementById('reliability-score-section');
+                container.innerHTML = `
+                    <h4>My Reliability</h4>
+                    <p style="font-size: 2rem; font-weight: bold;" class="text-primary">${user.reliabilityScore}</p>
+                    <div style="display: flex; justify-content: space-around; font-size: 0.9rem;">
+                        <span><strong class="text-success">${user.jobsCompleted}</strong> Completed</span>
+                        <span><strong class="text-danger">${user.cancellationsCount}</strong> Cancelled</span>
+                    </div>
+                `;
+            },
+            renderChatMessages: (jobId) => {
+                const chat = state.db.chats.find(c => c.jobId === jobId);
+                const container = document.getElementById('chat-messages');
+                container.innerHTML = '';
+
+                if (!chat || chat.messages.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center">No messages yet. Start the conversation!</p>';
+                    return;
+                }
+
+                chat.messages.forEach(msg => {
+                    const msgEl = document.createElement('div');
+                    const sender = state.db.users.find(u => u.id === msg.senderId);
+                    const isSent = msg.senderId === state.currentUser.id;
+                    
+                    msgEl.className = `chat-message ${isSent ? 'sent' : 'received'}`;
+                    msgEl.innerHTML = `
+                        <strong>${isSent ? 'You' : sender.displayName}</strong>
+                        <p>${msg.text}</p>
+                        <span class="timestamp">${new Date(msg.timestampISO).toLocaleTimeString()}</span>
+                    `;
+                    container.appendChild(msgEl);
+                });
+                container.scrollTop = container.scrollHeight;
+            },
             hideModal: (modalId) => {
                 const modal = document.getElementById(modalId);
                 if (modal) modal.classList.add('hidden');
@@ -1835,9 +2027,22 @@
                 document.getElementById('rate-organizer-form')?.addEventListener('submit', handlers.handleRateOrganizer);
                 document.getElementById('report-issue-form')?.addEventListener('submit', handlers.handleReportIssue);
                 document.getElementById('load-funds-form')?.addEventListener('submit', handlers.handleLoadFunds);
+                document.getElementById('payout-funds-form')?.addEventListener('submit', handlers.handlePayoutFunds);
                 document.getElementById('auto-detect-location-btn')?.addEventListener('click', handlers.handleAutoDetectLocation);
                 document.getElementById('manual-location-form')?.addEventListener('submit', handlers.handleManualLocation);
                 document.getElementById('add-document-form')?.addEventListener('submit', handlers.handleAddDocument);
+                document.getElementById('chat-form')?.addEventListener('submit', handlers.handleSendMessage);
+                document.getElementById('acknowledge-briefing-btn')?.addEventListener('click', handlers.handleAcknowledgeBriefing);
+
+                // Event delegation for chat buttons on job cards
+                document.getElementById('app-root').addEventListener('click', (e) => {
+                    if (e.target && e.target.classList.contains('chat-btn')) {
+                        const jobId = e.target.dataset.jobId;
+                        const jobTitle = e.target.dataset.jobTitle;
+                        handlers.handleShowChatModal(jobId, jobTitle);
+                    }
+                });
+
 
                 // Confirmation Modal Handlers
                 document.getElementById('cancel-action-btn').onclick = () => ui.hideModal('confirmation-modal');
@@ -1869,38 +2074,86 @@
                 localStorage.setItem('swiftStaffTheme', isDarkMode ? 'dark' : 'light');
                 document.getElementById('theme-toggle-btn').innerHTML = isDarkMode ? '☀️' : '🌙';
             },
+            calculateUrgencyFee: (startTime, budget, positions) => {
+                const now = new Date();
+                const startDate = new Date(startTime);
+                const hoursUntilStart = (startDate - now) / (1000 * 60 * 60);
+                
+                let feePercentage = 0;
+                if (hoursUntilStart < 2) {
+                    feePercentage = 35; // 35% crisis fee
+                } else if (hoursUntilStart < 12) {
+                    feePercentage = 25; // 25% fee
+                } else if (hoursUntilStart < 24) {
+                    feePercentage = 15; // 15% fee
+                }
+
+                const baseBudget = budget * positions;
+                const feeAmount = baseBudget * (feePercentage / 100);
+                const commission = baseBudget * PLATFORM_COMMISSION;
+                const totalAmount = baseBudget + feeAmount + commission;
+
+                return { baseBudget, feePercentage, feeAmount, commission, totalAmount };
+            },
             handlePostJob: (e) => {
                 e.preventDefault();
-                const now = new Date();
-                const expiryMinutes = parseInt(document.getElementById('job-expiry').value, 10);
+                const budget = parseFloat(document.getElementById('job-budget').value);
+                const startTime = document.getElementById('job-start-time').value;
+                const positions = parseInt(document.getElementById('job-positions').value, 10);
+
+                if (!startTime) {
+                    notifications.showToast("Please select a valid start time.");
+                    return;
+                }
+                if (new Date(startTime) < new Date()) {
+                    notifications.showToast("Job start time cannot be in the past.");
+                    return;
+                }
+
+                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions);
+
+                if (state.currentUser.wallet < feeDetails.totalAmount) {
+                    notifications.showToast(`Insufficient funds. You need ZAR ${feeDetails.totalAmount.toFixed(2)} but only have ZAR ${state.currentUser.wallet.toFixed(2)}.`);
+                    return;
+                }
+
                 const areaName = document.getElementById('job-location-name').value.toLowerCase().trim();
                 const coords = AREA_COORDINATES[areaName] || AREA_COORDINATES['default'];
 
                 const newJob = {
                     id: `job-${Date.now()}`,
                     title: document.getElementById('job-title').value,
-                    positionsNeeded: parseInt(document.getElementById('job-positions').value, 10) || 1,
+                    briefing: document.getElementById('job-briefing').value,
+                    positionsNeeded: positions,
                     description: {
                         responsibilities: document.getElementById('job-responsibilities').value,
                         requirements: document.getElementById('job-requirements').value,
                         contact: document.getElementById('job-contact-person').value,
                     },
                     category: document.getElementById('job-category').value,
-                    budget: parseFloat(document.getElementById('job-budget').value),
+                    budget: budget,
+                    urgencyFee: feeDetails.feeAmount,
+                    totalBudget: feeDetails.totalAmount,
                     location: {
                         lat: coords.lat,
                         lng: coords.lng,
                         areaName: document.getElementById('job-location-name').value,
                     },
                     radiusKm: parseInt(document.getElementById('job-radius').value, 10),
-                    createdAtISO: now.toISOString(),
-                    expiresAtISO: new Date(now.getTime() + expiryMinutes * 60 * 1000).toISOString(),
+                    createdAtISO: new Date().toISOString(),
+                    startTimeISO: new Date(startTime).toISOString(),
                     status: 'open',
                     clientId: state.currentUser.id,
                     applicants: [],
                     assignedFreelancers: [],
+                    acknowledgedBriefing: [],
+                    checkedIn: [],
                 };
                 state.db.jobs.push(newJob);
+
+                // Deduct from client wallet
+                auth.updateUser(state.currentUser.id, { wallet: state.currentUser.wallet - feeDetails.totalAmount });
+                
                 storage.saveDB(state.db);
                 
                 const eligibleFreelancers = state.db.users.filter(u => 
@@ -1916,7 +2169,7 @@
 
                 ui.hideModal('post-job-modal');
                 ui.render();
-                notifications.showToast("Job posted successfully!");
+                notifications.showToast("Job posted successfully! Funds are now in escrow.");
             },
             handleEditProfile: async (e) => {
                 e.preventDefault();
@@ -2086,6 +2339,12 @@
                     return;
                 }
 
+                // Create chat on first hire
+                const chatExists = state.db.chats.some(c => c.jobId === jobId);
+                if (!chatExists) {
+                    state.db.chats.push({ id: `chat-${jobId}`, jobId: jobId, messages: [] });
+                }
+
                 job.assignedFreelancers.push(freelancerId);
                 
                 if (job.assignedFreelancers.length >= job.positionsNeeded) {
@@ -2227,22 +2486,27 @@
             },
             handlePayment: (jobId) => {
                 const job = state.db.jobs.find(j => j.id === jobId);
-                const client = state.currentUser;
-                const totalBudget = job.budget * job.assignedFreelancers.length;
-
-                if (client.wallet < totalBudget) {
-                    notifications.showToast("Insufficient funds to pay all staff. Please load your wallet.");
-                    return;
-                }
-
-                auth.updateUser(client.id, { wallet: client.wallet - totalBudget });
+                
+                // The client has already paid via escrow. This action moves the funds.
+                
+                // Pay freelancers and update their reliability score
                 job.assignedFreelancers.forEach(fId => {
                     const freelancer = state.db.users.find(u => u.id === fId);
                     if (freelancer) {
-                        auth.updateUser(fId, { wallet: freelancer.wallet + job.budget });
-                        notifications.create(fId, `You have been paid ZAR ${job.budget.toFixed(2)} for the job "${job.title}".`);
+                        const updates = {
+                            wallet: freelancer.wallet + job.budget,
+                            reliabilityScore: (freelancer.reliabilityScore || 100) + 5,
+                            jobsCompleted: (freelancer.jobsCompleted || 0) + 1,
+                        };
+                        auth.updateUser(fId, updates);
+                        notifications.create(fId, `You have been paid ZAR ${job.budget.toFixed(2)} for the job "${job.title}". Your reliability score increased!`);
                     }
                 });
+
+                // Pay platform
+                const platformCommission = job.budget * job.assignedFreelancers.length * PLATFORM_COMMISSION;
+                const platformTotalEarnings = platformCommission + job.urgencyFee;
+                state.db.platformWallet += platformTotalEarnings;
                 
                 const jobIndex = state.db.jobs.findIndex(j => j.id === jobId);
                 state.db.jobs[jobIndex].status = 'paid';
@@ -2263,6 +2527,94 @@
                     notifications.showToast(`ZAR ${amount.toFixed(2)} added to your wallet.`);
                 }
             },
+            handlePayoutFunds: (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('payout-amount').value);
+                const user = state.currentUser;
+
+                if (amount <= 0) {
+                    notifications.showToast("Please enter a valid amount.");
+                    return;
+                }
+                if (amount > user.wallet) {
+                    notifications.showToast("Insufficient funds for this payout.");
+                    return;
+                }
+
+                const fee = amount * (PAYOUT_FEE_PERCENTAGE / 100);
+                const totalDeduction = amount; // User receives amount minus fee, but full amount is deducted
+                const receivedAmount = amount - fee;
+
+                auth.updateUser(user.id, { wallet: user.wallet - totalDeduction });
+                state.db.platformWallet += fee;
+                storage.saveDB(state.db);
+
+                ui.hideModal('wallet-modal');
+                ui.render();
+                notifications.showToast(`Payout of ZAR ${receivedAmount.toFixed(2)} is being processed!`);
+            },
+            handleShowChatModal: (jobId, jobTitle) => {
+                const chatForm = document.getElementById('chat-form');
+                chatForm.dataset.jobId = jobId;
+                document.getElementById('chat-title').textContent = `Chat: ${jobTitle}`;
+                ui.renderChatMessages(jobId);
+                ui.showModal('chat-modal');
+            },
+            handleSendMessage: (e) => {
+                e.preventDefault();
+                const jobId = e.target.dataset.jobId;
+                const messageInput = document.getElementById('chat-message-input');
+                const text = messageInput.value.trim();
+
+                if (!text || !jobId) return;
+
+                const chat = state.db.chats.find(c => c.jobId === jobId);
+                const job = state.db.jobs.find(j => j.id === jobId);
+                if (!chat || !job) return;
+
+                const newMessage = {
+                    senderId: state.currentUser.id,
+                    text,
+                    timestampISO: new Date().toISOString()
+                };
+
+                chat.messages.push(newMessage);
+                storage.saveDB(state.db);
+                messageInput.value = '';
+                ui.renderChatMessages(jobId);
+
+                // Notify other participants
+                const participants = [job.clientId, ...job.assignedFreelancers];
+                const otherParticipants = participants.filter(id => id !== state.currentUser.id);
+                
+                otherParticipants.forEach(userId => {
+                    notifications.create(userId, `New message from ${state.currentUser.displayName} in "${job.title}" chat.`, 'chat', jobId);
+                });
+            },
+            handleShowBriefingModal: (jobId) => {
+                const job = state.db.jobs.find(j => j.id === jobId);
+                if (!job) return;
+                document.getElementById('briefing-title').textContent = `Briefing: ${job.title}`;
+                document.getElementById('briefing-content').textContent = job.briefing;
+                document.getElementById('acknowledge-briefing-btn').dataset.jobId = jobId;
+                ui.showModal('briefing-modal');
+            },
+            handleAcknowledgeBriefing: (e) => {
+                const jobId = e.target.dataset.jobId;
+                const jobIndex = state.db.jobs.findIndex(j => j.id === jobId);
+                if (jobIndex === -1) return;
+
+                state.db.jobs[jobIndex].acknowledgedBriefing.push(state.currentUser.id);
+                storage.saveDB(state.db);
+                ui.hideModal('briefing-modal');
+                notifications.showToast("Briefing acknowledged!");
+                ui.render();
+            },
+            handleShowCheckInModal: (jobId) => {
+                // In a real app, this would generate a unique QR code.
+                // For now, we'll just show the modal.
+                ui.showModal('check-in-modal');
+            },
             promptForCancellation: (jobId) => {
                 const job = state.db.jobs.find(j => j.id === jobId);
                 const user = state.currentUser;
@@ -2270,11 +2622,11 @@
                 
                 if (user.role === 'freelancer') {
                     const penalty = (job.budget * 0.25).toFixed(2);
-                    message = `You will be charged a ZAR ${penalty} penalty for cancelling this assignment. This will be deducted from your wallet. Do you wish to proceed?`;
+                    message = `You will be charged a ZAR ${penalty} penalty and your Reliability Score will decrease. Do you wish to proceed?`;
                 } else if (user.role === 'client') {
                     const penaltyPerPerson = (job.budget * 0.50).toFixed(2);
                     const totalPenalty = (penaltyPerPerson * job.assignedFreelancers.length).toFixed(2);
-                    message = `You will pay a ZAR ${penaltyPerPerson} fee to each of the ${job.assignedFreelancers.length} hired freelancer(s), for a total of ZAR ${totalPenalty}. This will be deducted from your wallet. Do you wish to proceed?`;
+                    message = `You will pay a ZAR ${penaltyPerPerson} fee to each of the ${job.assignedFreelancers.length} hired freelancer(s), for a total of ZAR ${totalPenalty}. Do you wish to proceed?`;
                 }
 
                 document.getElementById('confirmation-title').textContent = 'Confirm Cancellation';
@@ -2291,7 +2643,11 @@
                 if (user.role === 'freelancer') {
                     // Freelancer cancels their own assignment
                     const penalty = job.budget * 0.25;
-                    auth.updateUser(user.id, { wallet: user.wallet - penalty });
+                    auth.updateUser(user.id, { 
+                        wallet: user.wallet - penalty,
+                        reliabilityScore: (user.reliabilityScore || 100) - 25,
+                        cancellationsCount: (user.cancellationsCount || 0) + 1,
+                    });
 
                     // Remove freelancer from job
                     job.assignedFreelancers = job.assignedFreelancers.filter(id => id !== user.id);
