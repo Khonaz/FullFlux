@@ -457,6 +457,10 @@
                         <option value="client">Client (Organizer)</option>
                     </select>
                 </div>
+                <div id="referral-group" class="form-group hidden">
+                    <label for="referralCode">Referral Code (Optional)</label>
+                    <input type="text" id="referralCode" class="form-control" placeholder="Enter code from a friend">
+                </div>
                 <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">Login</button>
             </form>
             <p class="text-center" style="margin-top: 1rem;">
@@ -472,7 +476,8 @@
                 <span class="badge job-category"></span>
             </div>
             <div class="job-description"></div>
-            <p><strong>Budget:</strong> ZAR <span class="job-budget"></span></p>
+            <p><strong>Budget:</strong> ZAR <span class="job-budget"></span> <span class="job-pay-rate"></span></p>
+            <p><strong>Dates:</strong> <span class="job-dates"></span></p>
             <p><strong>Location:</strong> <span class="job-location"></span> (<span class="job-distance"></span> km away)</p>
             <p><strong>Positions:</strong> <span class="job-positions"></span></p>
             <p><strong>Status:</strong> <span class="badge job-status"></span></p>
@@ -558,7 +563,7 @@
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex-grow: 1;">
-                        <label for="job-budget">Budget (ZAR per person)</label>
+                        <label for="job-budget">Budget (ZAR per person, per day)</label>
                         <input type="number" id="job-budget" class="form-control" required min="1">
                     </div>
                     <div class="form-group" style="width: 120px;">
@@ -567,8 +572,12 @@
                     </div>
                 </div>
                  <div class="form-group">
-                    <label for="job-start-time">Job Start Time</label>
+                    <label for="job-start-time">Event Start Date & Time</label>
                     <input type="datetime-local" id="job-start-time" class="form-control" required>
+                </div>
+                 <div class="form-group">
+                    <label for="job-end-time">Event End Date & Time</label>
+                    <input type="datetime-local" id="job-end-time" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="job-location-name">Area Name</label>
@@ -706,6 +715,9 @@
                     <div id="reliability-score-section" class="card" style="padding: 1rem; text-align: center;">
                         <!-- Reliability score details here -->
                     </div>
+                    <div id="referral-code-section" class="card" style="padding: 1rem; text-align: center;">
+                        <!-- Referral code details here -->
+                    </div>
                     <div class="form-group">
                         <label>Skills</label>
                         <div id="profile-skills-checklist">
@@ -774,16 +786,16 @@
             </div>
             <div id="payout-funds-section" class="hidden">
                 <hr style="margin: 1rem 0;">
-                <h4>Instant Payout</h4>
+                <h4>Request Payout</h4>
                 <form id="payout-funds-form">
+                     <div id="banking-details-group">
+                        <!-- Banking details fields will be injected here if needed -->
+                    </div>
                     <div class="form-group">
                         <label for="payout-amount">Amount (ZAR)</label>
                         <input type="number" id="payout-amount" class="form-control" min="50" required>
                     </div>
-                    <div id="payout-calculation" class="card" style="padding: 1rem; margin-bottom: 1rem; background-color: rgba(0,0,0,0.05);">
-                        <!-- Payout calculation details here -->
-                    </div>
-                    <button type="submit" class="btn btn-success btn-block">Cash Out</button>
+                    <button type="submit" class="btn btn-success btn-block">Request Payout</button>
                 </form>
             </div>
         </div>
@@ -869,10 +881,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module">
         // --- CONFIG & CONSTANTS ---
-        const DB_VERSION = '1.0.6'; // Updated version for reliability score
+        const DB_VERSION = '1.0.9'; // Updated version for multi-day events
         const STORAGE_KEY = 'fullFluxDB';
         const PLATFORM_COMMISSION = 0.20; // 20%
-        const PAYOUT_FEE_PERCENTAGE = 2.5; // 2.5%
+        const REFERRAL_BONUS = 50.00; // ZAR 50
         const SKILLS = {
             "Event Logistics & Setup": ["stagehand", "rigger", "security", "logistics-coordinator", "setup-crew"],
             "Event Staff & Services": ["bartender", "waitstaff", "registration", "brand-ambassador", "performer"],
@@ -932,6 +944,8 @@
                     disputes: [],
                     cancellations: [], 
                     platformWallet: 0,
+                    referrals: [],
+                    payoutRequests: [],
                 };
                 storage.seedData(db);
                 storage.saveDB(db);
@@ -941,29 +955,32 @@
                 const now = new Date('2025-08-16T15:35:00+02:00');
 
                 const freelancers = [
-                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0 }, 
-                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0 },
-                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1 },
-                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0 },
-                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2 },
-                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0 },
+                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0, referralCode: 'JOHN-REF-1', referredBy: null, firstJobCompleted: true, bankingDetails: null }, 
+                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0, referralCode: 'JANE-REF-2', referredBy: 'user-f1', firstJobCompleted: true, bankingDetails: { bankName: 'FNB', accountNumber: '123456789', branchCode: '250655'} },
+                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1, referralCode: 'MIKE-REF-3', referredBy: null, firstJobCompleted: true, bankingDetails: null },
+                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0, referralCode: 'SARA-REF-4', referredBy: 'user-f2', firstJobCompleted: false, bankingDetails: null },
+                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2, referralCode: 'PETER-REF-5', referredBy: null, firstJobCompleted: true, bankingDetails: null },
+                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0, referralCode: 'LINDA-REF-6', referredBy: null, firstJobCompleted: true, bankingDetails: null },
                 ];
                 db.users.push(...freelancers);
 
                 const clients = [
-                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15 },
-                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22 },
-                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30 },
+                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15, referralCode: 'EVENTCO-REF-1' },
+                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22, referralCode: 'GALA-REF-2' },
+                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30, referralCode: 'WEDDINGS-REF-3' },
                 ];
                 db.users.push(...clients);
 
+                // Add Admin User
+                db.users.push({ id: 'user-admin', role: 'admin', username: 'admin', passwordHash: 'a', displayName: 'Admin' });
+
                 const jobs = [
-                    { id: `job-1`, title: "Urgent Bartenders for Gala", briefing: "- Dress code: All black, formal.\n- Report to Maria at the main bar.\n- Familiarize yourself with our signature cocktail menu upon arrival.", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", budget: 1500, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 1.5 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 525, totalBudget: 3525 }, 
-                    { id: `job-2`, title: "Music Festival Setup Crew", briefing: "", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", budget: 800, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 14 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 1200, totalBudget: 9200 },
-                    { id: `job-3`, title: "Corporate Event Greeters", briefing: "Meet Thabo at the registration desk 30 minutes prior to event start. Attire is business professional. Main duty is to check-in guests via the provided tablets.", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", budget: 750, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], acknowledgedBriefing: [freelancers[1].id], checkedIn: [], urgencyFee: 0, totalBudget: 2250 }, 
-                    { id: `job-4`, title: "Post-Wedding Cleanup", briefing: "", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", budget: 600, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 2400 },
-                    { id: `job-5`, title: "Charity Fun Run Marshals", briefing: "", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", budget: 500, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - (7 * 24 - 2) * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 1000 },
-                    { id: `job-6`, title: "New Year's Eve Security", briefing: "Stationed at main entrance. Check IDs and wristbands. Radio contact is channel 3. Report any issues to the event manager on duty.", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", budget: 2000, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), startTimeISO: new Date('2025-01-01T20:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], acknowledgedBriefing: [freelancers[5].id], checkedIn: [], urgencyFee: 0, totalBudget: 2000 },
+                    { id: `job-1`, title: "Urgent Bartenders for Gala", briefing: "- Dress code: All black, formal.\n- Report to Maria at the main bar.\n- Familiarize yourself with our signature cocktail menu upon arrival.", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", budget: 1500, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 1.5 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 525, totalBudget: 3525 }, 
+                    { id: `job-2`, title: "3-Day Music Festival Setup", briefing: "", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", budget: 800, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 14 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + (14 + 48) * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 1200, totalBudget: 9200 },
+                    { id: `job-3`, title: "Corporate Event Greeters", briefing: "Meet Thabo at the registration desk 30 minutes prior to event start. Attire is business professional. Main duty is to check-in guests via the provided tablets.", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", budget: 750, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 10 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], acknowledgedBriefing: [freelancers[1].id], checkedIn: [], urgencyFee: 0, totalBudget: 2250 }, 
+                    { id: `job-4`, title: "Post-Wedding Cleanup", briefing: "", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", budget: 600, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 2400 },
+                    { id: `job-5`, title: "Charity Fun Run Marshals", briefing: "", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", budget: 500, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - (7 * 24 - 2) * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() - (7 * 24 - 8) * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 1000 },
+                    { id: `job-6`, title: "New Year's Eve Security", briefing: "Stationed at main entrance. Check IDs and wristbands. Radio contact is channel 3. Report any issues to the event manager on duty.", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", budget: 2000, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), startTimeISO: new Date('2025-01-01T20:00:00+02:00').toISOString(), endTimeISO: new Date('2025-01-02T04:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], acknowledgedBriefing: [freelancers[5].id], checkedIn: [], urgencyFee: 0, totalBudget: 2000 },
                 ];
                 db.jobs.push(...jobs);
 
@@ -986,6 +1003,14 @@
                     ]},
                 ];
                 db.chats.push(...chats);
+                
+                db.payoutRequests.push({
+                    id: `payout-1`,
+                    userId: freelancers[1].id,
+                    amount: 250,
+                    status: 'pending',
+                    createdAtISO: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString()
+                });
             }
         };
 
@@ -995,14 +1020,26 @@
                 const user = state.db.users.find(u => u.username === username && u.passwordHash === password); // Simplified hash
                 if (user) {
                     state.currentUser = user;
+                    localStorage.setItem('fullFluxSession', user.id);
                     return true;
                 }
                 return false;
             },
-            register: (username, password, displayName, role) => {
+            register: (username, password, displayName, role, referralCode) => {
                 if (state.db.users.some(u => u.username === username)) {
                     return { success: false, message: "Username already exists." };
                 }
+
+                let referrerId = null;
+                if (referralCode) {
+                    const referrer = state.db.users.find(u => u.referralCode === referralCode);
+                    if (referrer) {
+                        referrerId = referrer.id;
+                    } else {
+                        return { success: false, message: "Invalid referral code." };
+                    }
+                }
+
                 const newUser = {
                     id: `user-${Date.now()}`,
                     role,
@@ -1013,6 +1050,8 @@
                     createdAt: new Date().toISOString(),
                     avgRating: 0,
                     ratingsCount: 0,
+                    referralCode: `${displayName.split(' ')[0].toUpperCase()}-REF-${Math.random().toString(36).substr(2, 4)}`,
+                    referredBy: referrerId,
                 };
                 if (role === 'freelancer') {
                     newUser.skills = [];
@@ -1022,12 +1061,15 @@
                     newUser.reliabilityScore = 100;
                     newUser.jobsCompleted = 0;
                     newUser.cancellationsCount = 0;
+                    newUser.firstJobCompleted = false;
+                    newUser.bankingDetails = null;
                 }
                 state.db.users.push(newUser);
                 storage.saveDB(state.db);
                 return { success: true, user: newUser };
             },
             logout: () => {
+                localStorage.removeItem('fullFluxSession');
                 state.currentUser = null;
                 state.currentView = 'dashboard'; // Reset view on logout
                 ui.render();
@@ -1174,7 +1216,9 @@
                 if (state.currentUser) {
                     ui.renderNav();
                     const user = state.currentUser;
-                    if (user.role === 'freelancer' && state.currentView === 'history') {
+                    if (user.role === 'admin') {
+                        ui.renderAdminDashboard();
+                    } else if (user.role === 'freelancer' && state.currentView === 'history') {
                         ui.renderFreelancerHistory();
                     } else if (user.role === 'freelancer' && state.currentView === 'map') {
                         ui.renderMapView();
@@ -1204,6 +1248,7 @@
                 const submitBtn = document.getElementById('auth-submit-btn');
                 const displayNameGroup = document.getElementById('display-name-group');
                 const roleGroup = document.getElementById('role-group');
+                const referralGroup = document.getElementById('referral-group');
 
                 toggleLink.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1213,6 +1258,7 @@
                     toggleLink.textContent = isRegistering ? 'Already have an account? Login' : "Don't have an account? Register";
                     displayNameGroup.classList.toggle('hidden', !isRegistering);
                     roleGroup.classList.toggle('hidden', !isRegistering);
+                    referralGroup.classList.toggle('hidden', !isRegistering);
                 });
 
                 form.addEventListener('submit', (e) => {
@@ -1223,11 +1269,12 @@
                     if (isRegistering) {
                         const displayName = document.getElementById('displayName').value;
                         const role = document.getElementById('role').value;
+                        const referralCode = document.getElementById('referralCode').value;
                         if (!displayName) {
                              notifications.showToast("Display name is required.");
                              return;
                         }
-                        const result = auth.register(username, password, displayName, role);
+                        const result = auth.register(username, password, displayName, role, referralCode);
                         if (result.success) {
                             auth.login(username, password);
                             ui.render();
@@ -1245,38 +1292,38 @@
             },
             renderNav: () => {
                 const nav = document.getElementById('main-nav');
-                const walletBalance = state.currentUser.wallet.toFixed(2);
                 const isDarkMode = document.body.classList.contains('dark-mode');
                 
-                let availabilityToggle = '';
-                if (state.currentUser.role === 'freelancer') {
-                    const isAvailable = state.currentUser.availability === 'available';
-                    availabilityToggle = `
-                        <button id="availability-toggle" class="btn ${isAvailable ? 'btn-danger' : 'btn-success'}">
-                            ${isAvailable ? 'Go Away' : 'Go Online'}
-                        </button>
+                let navLinks = '';
+                if (state.currentUser.role === 'admin') {
+                    navLinks = `<span><strong>Admin Panel</strong></span>`;
+                } else {
+                    const walletBalance = state.currentUser.wallet.toFixed(2);
+                    let availabilityToggle = '';
+                    if (state.currentUser.role === 'freelancer') {
+                        const isAvailable = state.currentUser.availability === 'available';
+                        availabilityToggle = `<button id="availability-toggle" class="btn ${isAvailable ? 'btn-danger' : 'btn-success'}">${isAvailable ? 'Go Away' : 'Go Online'}</button>`;
+                    }
+                    let historyLink = '';
+                    if (state.currentUser.role === 'freelancer') {
+                        historyLink = state.currentView === 'history' ? `<a href="#" id="dashboard-link">Dashboard</a>` : `<a href="#" id="history-link">History</a>`;
+                    }
+                    navLinks = `
+                        <span>Welcome, <strong>${state.currentUser.displayName}</strong></span>
+                        <a href="#" id="wallet-link">Wallet: ZAR <span id="wallet-balance">${walletBalance}</span></a>
+                        ${availabilityToggle}
+                        ${historyLink}
+                        <a href="#" id="edit-profile-link">Profile</a>
+                        <a href="#" id="cancellation-policy-link">Policy</a>
                     `;
                 }
 
-                let historyLink = '';
-                if (state.currentUser.role === 'freelancer') {
-                    if (state.currentView === 'history') {
-                        historyLink = `<a href="#" id="dashboard-link">Dashboard</a>`;
-                    } else {
-                        historyLink = `<a href="#" id="history-link">History</a>`;
-                    }
-                }
 
                 nav.innerHTML = `
-                    <span>Welcome, <strong>${state.currentUser.displayName}</strong></span>
-                    <a href="#" id="wallet-link">Wallet: ZAR <span id="wallet-balance">${walletBalance}</span></a>
-                    ${availabilityToggle}
-                    ${historyLink}
-                    <a href="#" id="edit-profile-link">Profile</a>
-                    <a href="#" id="cancellation-policy-link">Policy</a>
+                    ${navLinks}
                     <a href="#" id="logout-link">Logout</a>
                     <button id="reset-data-btn" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Reset Demo</button>
-                    <button id="theme-toggle-btn" class="theme-toggle">${isDarkMode ? '☀️' : '�'}</button>
+                    <button id="theme-toggle-btn" class="theme-toggle">${isDarkMode ? '☀️' : '🌙'}</button>
                 `;
 
                 document.getElementById('logout-link').addEventListener('click', (e) => {
@@ -1284,24 +1331,22 @@
                     auth.logout();
                 });
                 
-                document.getElementById('edit-profile-link').addEventListener('click', (e) => {
+                document.getElementById('edit-profile-link')?.addEventListener('click', (e) => {
                     e.preventDefault();
                     ui.showModal('edit-profile-modal');
                 });
 
-                document.getElementById('wallet-link').addEventListener('click', (e) => {
+                document.getElementById('wallet-link')?.addEventListener('click', (e) => {
                     e.preventDefault();
                     ui.showModal('wallet-modal');
                 });
 
-                document.getElementById('cancellation-policy-link').addEventListener('click', (e) => {
+                document.getElementById('cancellation-policy-link')?.addEventListener('click', (e) => {
                     e.preventDefault();
                     ui.showModal('cancellation-policy-modal');
                 });
                 
-                if (document.getElementById('availability-toggle')) {
-                    document.getElementById('availability-toggle').addEventListener('click', handlers.handleAvailabilityToggle);
-                }
+                document.getElementById('availability-toggle')?.addEventListener('click', handlers.handleAvailabilityToggle);
                 
                 document.getElementById('reset-data-btn').addEventListener('click', () => {
                     localStorage.removeItem(STORAGE_KEY);
@@ -1529,6 +1574,45 @@
                     }).addTo(map).bindPopup('Your Location');
                 }
             },
+            renderAdminDashboard: () => {
+                const root = document.getElementById('app-root');
+                const pendingPayouts = state.db.payoutRequests.filter(p => p.status === 'pending');
+                
+                let payoutListHtml = '<p class="text-muted">No pending payout requests.</p>';
+                if (pendingPayouts.length > 0) {
+                    payoutListHtml = pendingPayouts.map(payout => {
+                        const user = state.db.users.find(u => u.id === payout.userId);
+                        if (!user) return '';
+                        return `
+                            <div class="card">
+                                <p><strong>User:</strong> ${user.displayName} (${user.username})</p>
+                                <p><strong>Amount:</strong> ZAR ${payout.amount.toFixed(2)}</p>
+                                <p><strong>Bank:</strong> ${user.bankingDetails.bankName}</p>
+                                <p><strong>Account:</strong> ${user.bankingDetails.accountNumber}</p>
+                                <p><strong>Branch Code:</strong> ${user.bankingDetails.branchCode}</p>
+                                <p><strong>Requested At:</strong> ${new Date(payout.createdAtISO).toLocaleString()}</p>
+                                <button class="btn btn-success btn-block" style="margin-top: 1rem;" data-payout-id="${payout.id}">Mark as Paid</button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                root.innerHTML = `
+                    <div class="dashboard-header">
+                        <h2>Admin Dashboard</h2>
+                    </div>
+                    <div class="card">
+                        <h3>Pending Payout Requests</h3>
+                        <div id="payout-list">${payoutListHtml}</div>
+                    </div>
+                `;
+
+                document.querySelectorAll('#payout-list button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        handlers.handleMarkAsPaid(e.target.dataset.payoutId);
+                    });
+                });
+            },
             renderJobCards: (containerId, jobs) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -1726,6 +1810,7 @@
                         if (user.role === 'freelancer') {
                             freelancerFields.classList.remove('hidden');
                             ui.renderReliabilityScore();
+                            ui.renderReferralCode();
                             const skillsContainer = document.getElementById('profile-skills-checklist');
                             skillsContainer.innerHTML = ''; // Clear old skills
                             for (const category in SKILLS) {
@@ -1757,6 +1842,7 @@
                         } else {
                             loadFundsSection.classList.add('hidden');
                             payoutFundsSection.classList.remove('hidden');
+                            ui.renderBankingDetailsForm();
                             document.getElementById('payout-amount').addEventListener('input', ui.updatePayoutCalculation);
                             ui.updatePayoutCalculation();
                         }
@@ -1978,6 +2064,19 @@
                     </div>
                 `;
             },
+            renderReferralCode: () => {
+                const user = state.currentUser;
+                const container = document.getElementById('referral-code-section');
+                container.innerHTML = `
+                    <h4>Your Referral Code</h4>
+                    <p class="text-muted">Share this code with friends! When they complete their first job, you both get a ZAR ${REFERRAL_BONUS.toFixed(2)} bonus.</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="text" id="referral-code-input" class="form-control" value="${user.referralCode}" readonly>
+                        <button id="copy-referral-btn" class="btn btn-secondary">Copy</button>
+                    </div>
+                `;
+                document.getElementById('copy-referral-btn').addEventListener('click', handlers.handleCopyReferralCode);
+            },
             renderChatMessages: (jobId) => {
                 const chat = state.db.chats.find(c => c.jobId === jobId);
                 const container = document.getElementById('chat-messages');
@@ -2002,6 +2101,37 @@
                     container.appendChild(msgEl);
                 });
                 container.scrollTop = container.scrollHeight;
+            },
+            renderBankingDetailsForm: () => {
+                const user = state.currentUser;
+                const container = document.getElementById('banking-details-group');
+                if (!user.bankingDetails) {
+                    container.innerHTML = `
+                        <p class="text-muted">Please add your banking details to request a payout.</p>
+                        <div class="form-group">
+                            <label for="bank-name">Bank Name</label>
+                            <input type="text" id="bank-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="account-number">Account Number</label>
+                            <input type="text" id="account-number" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="branch-code">Branch Code</label>
+                            <input type="text" id="branch-code" class="form-control" required>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <p><strong>Payout to:</strong> ${user.bankingDetails.bankName} - ****${user.bankingDetails.accountNumber.slice(-4)}</p>
+                        <a href="#" id="edit-banking-details-link">Edit Banking Details</a>
+                    `;
+                    document.getElementById('edit-banking-details-link').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        user.bankingDetails = null; // Clear to show the form
+                        ui.renderBankingDetailsForm();
+                    });
+                }
             },
             hideModal: (modalId) => {
                 const modal = document.getElementById(modalId);
@@ -2072,7 +2202,7 @@
                 document.body.classList.toggle('dark-mode');
                 const isDarkMode = document.body.classList.contains('dark-mode');
                 localStorage.setItem('swiftStaffTheme', isDarkMode ? 'dark' : 'light');
-                document.getElementById('theme-toggle-btn').innerHTML = isDarkMode ? '☀️' : '🌙';
+                document.getElementById('theme-toggle-btn').innerHTML = isDarkMode ? '☀️' : '🌙'
             },
             calculateUrgencyFee: (startTime, budget, positions) => {
                 const now = new Date();
@@ -2099,14 +2229,15 @@
                 e.preventDefault();
                 const budget = parseFloat(document.getElementById('job-budget').value);
                 const startTime = document.getElementById('job-start-time').value;
+                const endTime = document.getElementById('job-end-time').value;
                 const positions = parseInt(document.getElementById('job-positions').value, 10);
 
-                if (!startTime) {
-                    notifications.showToast("Please select a valid start time.");
+                if (!startTime || !endTime) {
+                    notifications.showToast("Please select a valid start and end time.");
                     return;
                 }
-                if (new Date(startTime) < new Date()) {
-                    notifications.showToast("Job start time cannot be in the past.");
+                if (new Date(endTime) <= new Date(startTime)) {
+                    notifications.showToast("End time must be after the start time.");
                     return;
                 }
 
@@ -2142,6 +2273,7 @@
                     radiusKm: parseInt(document.getElementById('job-radius').value, 10),
                     createdAtISO: new Date().toISOString(),
                     startTimeISO: new Date(startTime).toISOString(),
+                    endTimeISO: new Date(endTime).toISOString(),
                     status: 'open',
                     clientId: state.currentUser.id,
                     applicants: [],
@@ -2487,8 +2619,6 @@
             handlePayment: (jobId) => {
                 const job = state.db.jobs.find(j => j.id === jobId);
                 
-                // The client has already paid via escrow. This action moves the funds.
-                
                 // Pay freelancers and update their reliability score
                 job.assignedFreelancers.forEach(fId => {
                     const freelancer = state.db.users.find(u => u.id === fId);
@@ -2498,8 +2628,21 @@
                             reliabilityScore: (freelancer.reliabilityScore || 100) + 5,
                             jobsCompleted: (freelancer.jobsCompleted || 0) + 1,
                         };
+
+                        // Check for referral bonus on first job completion
+                        if (!freelancer.firstJobCompleted && freelancer.referredBy) {
+                            const referrer = state.db.users.find(u => u.id === freelancer.referredBy);
+                            if (referrer) {
+                                updates.wallet += REFERRAL_BONUS;
+                                auth.updateUser(referrer.id, { wallet: referrer.wallet + REFERRAL_BONUS });
+                                notifications.create(referrer.id, `You earned a ZAR ${REFERRAL_BONUS.toFixed(2)} bonus! Your referral, ${freelancer.displayName}, completed their first job.`);
+                                notifications.create(freelancer.id, `You earned a ZAR ${REFERRAL_BONUS.toFixed(2)} referral bonus for completing your first job!`);
+                            }
+                            updates.firstJobCompleted = true;
+                        }
+
                         auth.updateUser(fId, updates);
-                        notifications.create(fId, `You have been paid ZAR ${job.budget.toFixed(2)} for the job "${job.title}". Your reliability score increased!`);
+                        notifications.create(fId, `You have been paid ZAR ${job.budget.toFixed(2)} for the job "${job.title}".`);
                     }
                 });
 
@@ -2541,17 +2684,30 @@
                     return;
                 }
 
-                const fee = amount * (PAYOUT_FEE_PERCENTAGE / 100);
-                const totalDeduction = amount; // User receives amount minus fee, but full amount is deducted
-                const receivedAmount = amount - fee;
+                // Save banking details if they are new
+                const bankName = document.getElementById('bank-name')?.value;
+                if (bankName) { // If the form is present, details are being updated
+                    const newBankingDetails = {
+                        bankName: bankName,
+                        accountNumber: document.getElementById('account-number').value,
+                        branchCode: document.getElementById('branch-code').value,
+                    };
+                    auth.updateUser(user.id, { bankingDetails: newBankingDetails });
+                }
 
-                auth.updateUser(user.id, { wallet: user.wallet - totalDeduction });
-                state.db.platformWallet += fee;
+                const newRequest = {
+                    id: `payout-${Date.now()}`,
+                    userId: user.id,
+                    amount: amount,
+                    status: 'pending',
+                    createdAtISO: new Date().toISOString()
+                };
+                state.db.payoutRequests.push(newRequest);
                 storage.saveDB(state.db);
 
                 ui.hideModal('wallet-modal');
                 ui.render();
-                notifications.showToast(`Payout of ZAR ${receivedAmount.toFixed(2)} is being processed!`);
+                notifications.showToast(`Payout request for ZAR ${amount.toFixed(2)} submitted for manual processing.`);
             },
             handleShowChatModal: (jobId, jobTitle) => {
                 const chatForm = document.getElementById('chat-form');
@@ -2614,6 +2770,17 @@
                 // In a real app, this would generate a unique QR code.
                 // For now, we'll just show the modal.
                 ui.showModal('check-in-modal');
+            },
+            handleCopyReferralCode: () => {
+                const codeInput = document.getElementById('referral-code-input');
+                codeInput.select();
+                codeInput.setSelectionRange(0, 99999); // For mobile devices
+                try {
+                    document.execCommand('copy');
+                    notifications.showToast("Referral code copied!");
+                } catch (err) {
+                    notifications.showToast("Failed to copy code.");
+                }
             },
             promptForCancellation: (jobId) => {
                 const job = state.db.jobs.find(j => j.id === jobId);
@@ -2684,6 +2851,23 @@
                 
                 storage.saveDB(state.db);
                 ui.render();
+            },
+            handleMarkAsPaid: (payoutId) => {
+                const payoutIndex = state.db.payoutRequests.findIndex(p => p.id === payoutId);
+                if (payoutIndex === -1) return;
+
+                const payout = state.db.payoutRequests[payoutIndex];
+                const user = state.db.users.find(u => u.id === payout.userId);
+
+                if (user) {
+                    auth.updateUser(user.id, { wallet: user.wallet - payout.amount });
+                    notifications.create(user.id, `Your payout of ZAR ${payout.amount.toFixed(2)} has been processed.`);
+                }
+
+                state.db.payoutRequests[payoutIndex].status = 'paid';
+                storage.saveDB(state.db);
+                ui.render();
+                notifications.showToast("Payout marked as paid.");
             }
         };
 
@@ -2693,14 +2877,24 @@
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-mode');
             }
-            console.log("FullFlux App Initializing...");
+            
             state.db = storage.getDB();
+            
+            const savedUserId = localStorage.getItem('fullFluxSession');
+            if (savedUserId) {
+                const user = state.db.users.find(u => u.id === savedUserId);
+                if (user) {
+                    state.currentUser = user;
+                }
+            }
+
+            console.log("FullFlux App Initializing...");
             ui.render();
         }
 
         // --- START THE APP ---
         document.addEventListener('DOMContentLoaded', init);
-
+        window.handlers = handlers; // Make handlers accessible for inline onclick
     </script>
 </body>
 </html>
