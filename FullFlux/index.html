@@ -774,15 +774,7 @@
             </div>
             <h3>Current Balance: <span id="modal-wallet-balance" class="text-success"></span></h3>
             <div id="load-funds-section" class="hidden">
-                <hr style="margin: 1rem 0;">
-                <h4>Load Funds</h4>
-                <form id="load-funds-form">
-                    <div class="form-group">
-                        <label for="load-amount">Amount (ZAR)</label>
-                        <input type="number" id="load-amount" class="form-control" min="100" required>
-                    </div>
-                    <button type="submit" class="btn btn-success btn-block">Load Funds</button>
-                </form>
+                <!-- Load funds UI will be injected here by JS -->
             </div>
             <div id="payout-funds-section" class="hidden">
                 <hr style="margin: 1rem 0;">
@@ -946,6 +938,7 @@
                     platformWallet: 0,
                     referrals: [],
                     payoutRequests: [],
+                    depositRequests: [],
                 };
                 storage.seedData(db);
                 storage.saveDB(db);
@@ -965,9 +958,9 @@
                 db.users.push(...freelancers);
 
                 const clients = [
-                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15, referralCode: 'EVENTCO-REF-1' },
-                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22, referralCode: 'GALA-REF-2' },
-                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30, referralCode: 'WEDDINGS-REF-3' },
+                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15, referralCode: 'EVENTCO-REF-1', paymentReference: 'FF-EVCO-01' },
+                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22, referralCode: 'GALA-REF-2', paymentReference: 'FF-GALA-02' },
+                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30, referralCode: 'WEDDINGS-REF-3', paymentReference: 'FF-WED-03' },
                 ];
                 db.users.push(...clients);
 
@@ -1063,6 +1056,8 @@
                     newUser.cancellationsCount = 0;
                     newUser.firstJobCompleted = false;
                     newUser.bankingDetails = null;
+                } else if (role === 'client') {
+                    newUser.paymentReference = `FF-${displayName.split(' ')[0].toUpperCase().substring(0,4)}-${Math.floor(Math.random() * 100)}`;
                 }
                 state.db.users.push(newUser);
                 storage.saveDB(state.db);
@@ -1489,12 +1484,12 @@
                 let yearEarnings = 0;
 
                 myJobs.forEach(job => {
-                    totalEarnings += job.budget;
+                    totalEarnings += job.budget * job.days;
                     const jobDate = new Date(job.createdAtISO);
                     if (jobDate.getFullYear() === currentYear) {
-                        yearEarnings += job.budget;
+                        yearEarnings += job.budget * job.days;
                         if (jobDate.getMonth() === currentMonth) {
-                            monthEarnings += job.budget;
+                            monthEarnings += job.budget * job.days;
                         }
                     }
                 });
@@ -1535,7 +1530,7 @@
                         <td style="padding: 0.5rem;">${new Date(job.createdAtISO).toLocaleDateString()}</td>
                         <td style="padding: 0.5rem;">${job.title}</td>
                         <td style="padding: 0.5rem;">${client ? client.displayName : 'N/A'}</td>
-                        <td style="padding: 0.5rem; text-align: right;">ZAR ${job.budget.toFixed(2)}</td>
+                        <td style="padding: 0.5rem; text-align: right;">ZAR ${(job.budget * job.days).toFixed(2)}</td>
                         <td style="padding: 0.5rem; text-align: center;"><span class="badge badge-${job.status === 'paid' ? 'success' : 'warning'}">${job.status}</span></td>
                     `;
                     tbody.appendChild(row);
@@ -1577,7 +1572,8 @@
             renderAdminDashboard: () => {
                 const root = document.getElementById('app-root');
                 const pendingPayouts = state.db.payoutRequests.filter(p => p.status === 'pending');
-                
+                const pendingDeposits = state.db.depositRequests.filter(d => d.status === 'pending');
+
                 let payoutListHtml = '<p class="text-muted">No pending payout requests.</p>';
                 if (pendingPayouts.length > 0) {
                     payoutListHtml = pendingPayouts.map(payout => {
@@ -1597,9 +1593,30 @@
                     }).join('');
                 }
 
+                let depositListHtml = '<p class="text-muted">No pending deposit requests.</p>';
+                if (pendingDeposits.length > 0) {
+                    depositListHtml = pendingDeposits.map(deposit => {
+                        const user = state.db.users.find(u => u.id === deposit.userId);
+                        if (!user) return '';
+                        return `
+                            <div class="card">
+                                <p><strong>User:</strong> ${user.displayName} (${user.username})</p>
+                                <p><strong>Amount:</strong> ZAR ${deposit.amount.toFixed(2)}</p>
+                                <p><strong>Reference:</strong> ${user.paymentReference}</p>
+                                <p><strong>Requested At:</strong> ${new Date(deposit.createdAtISO).toLocaleString()}</p>
+                                <button class="btn btn-success btn-block" style="margin-top: 1rem;" data-deposit-id="${deposit.id}">Approve Deposit</button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
                 root.innerHTML = `
                     <div class="dashboard-header">
                         <h2>Admin Dashboard</h2>
+                    </div>
+                    <div class="card">
+                        <h3>Pending Deposit Requests</h3>
+                        <div id="deposit-list">${depositListHtml}</div>
                     </div>
                     <div class="card">
                         <h3>Pending Payout Requests</h3>
@@ -1610,6 +1627,12 @@
                 document.querySelectorAll('#payout-list button').forEach(button => {
                     button.addEventListener('click', (e) => {
                         handlers.handleMarkAsPaid(e.target.dataset.payoutId);
+                    });
+                });
+
+                document.querySelectorAll('#deposit-list button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        handlers.handleApproveDeposit(e.target.dataset.depositId);
                     });
                 });
             },
@@ -1647,7 +1670,12 @@
                     <p><strong>Requirements:</strong> ${job.description.requirements || 'Not specified'}</p>
                 `;
 
+                const days = Math.ceil((new Date(job.endTimeISO) - new Date(job.startTimeISO)) / (1000 * 60 * 60 * 24));
+                const jobDays = days > 0 ? days : 1;
                 card.querySelector('.job-budget').textContent = job.budget.toFixed(2);
+                card.querySelector('.job-pay-rate').textContent = jobDays > 1 ? `(per day)` : '';
+                card.querySelector('.job-dates').textContent = `${new Date(job.startTimeISO).toLocaleDateString()} - ${new Date(job.endTimeISO).toLocaleDateString()}`;
+
                 card.querySelector('.job-location').textContent = job.location.areaName;
                 card.querySelector('.job-distance').textContent = distance;
                 card.querySelector('.job-positions').textContent = `${job.assignedFreelancers.length} / ${job.positionsNeeded}`;
@@ -1839,6 +1867,7 @@
                         if (state.currentUser.role === 'client') {
                             loadFundsSection.classList.remove('hidden');
                             payoutFundsSection.classList.add('hidden');
+                            ui.renderLoadFundsForm();
                         } else {
                             loadFundsSection.classList.add('hidden');
                             payoutFundsSection.classList.remove('hidden');
@@ -1863,6 +1892,7 @@
                         // Add listeners for dynamic fee calculation
                         document.getElementById('job-budget').addEventListener('input', ui.updateFeeCalculation);
                         document.getElementById('job-start-time').addEventListener('input', ui.updateFeeCalculation);
+                        document.getElementById('job-end-time').addEventListener('input', ui.updateFeeCalculation);
                         document.getElementById('job-positions').addEventListener('input', ui.updateFeeCalculation);
                         ui.updateFeeCalculation(); // Initial calculation
                     }
@@ -1875,21 +1905,23 @@
 
                 const budgetInput = document.getElementById('job-budget');
                 const startTimeInput = document.getElementById('job-start-time');
+                const endTimeInput = document.getElementById('job-end-time');
                 const positionsInput = document.getElementById('job-positions');
 
                 const budget = parseFloat(budgetInput.value) || 0;
                 const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
                 const positions = parseInt(positionsInput.value) || 1;
 
-                if (budget <= 0 || !startTime) {
-                    container.innerHTML = '<p class="text-muted">Enter a budget and start time to see the cost breakdown.</p>';
+                if (budget <= 0 || !startTime || !endTime) {
+                    container.innerHTML = '<p class="text-muted">Enter budget and dates to see the cost breakdown.</p>';
                     return;
                 }
 
-                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions);
+                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions, endTime);
 
                 container.innerHTML = `
-                    <h4>Cost Breakdown</h4>
+                    <h4>Cost Breakdown (${feeDetails.days} Day${feeDetails.days > 1 ? 's' : ''})</h4>
                     <p>Base Budget: ZAR ${feeDetails.baseBudget.toFixed(2)}</p>
                     <p>Urgency Fee (${feeDetails.feePercentage}%): <span class="${feeDetails.feeAmount > 0 ? 'text-warning' : ''}">ZAR ${feeDetails.feeAmount.toFixed(2)}</span></p>
                     <p>Platform Commission (20%): ZAR ${feeDetails.commission.toFixed(2)}</p>
@@ -2133,6 +2165,30 @@
                     });
                 }
             },
+            renderLoadFundsForm: () => {
+                const container = document.getElementById('load-funds-section');
+                const user = state.currentUser;
+                container.innerHTML = `
+                    <hr style="margin: 1rem 0;">
+                    <h4>Load Funds via EFT</h4>
+                    <p class="text-muted">1. Make an EFT to the following account using your unique reference.</p>
+                    <div class="card" style="background-color: rgba(0,0,0,0.05);">
+                        <p><strong>Bank:</strong> FullFlux Standard Bank</p>
+                        <p><strong>Account Number:</strong> 123456789</p>
+                        <p><strong>Branch Code:</strong> 051001</p>
+                        <p><strong>Reference:</strong> <strong class="text-danger">${user.paymentReference}</strong></p>
+                    </div>
+                    <p class="text-muted">2. After paying, confirm the amount below to submit your deposit for verification.</p>
+                    <form id="load-funds-form">
+                        <div class="form-group">
+                            <label for="load-amount">Amount Deposited (ZAR)</label>
+                            <input type="number" id="load-amount" class="form-control" min="100" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">I have made the payment</button>
+                    </form>
+                `;
+                document.getElementById('load-funds-form').addEventListener('submit', handlers.handleConfirmDeposit);
+            },
             hideModal: (modalId) => {
                 const modal = document.getElementById(modalId);
                 if (modal) modal.classList.add('hidden');
@@ -2156,7 +2212,7 @@
                 document.getElementById('rate-freelancer-form')?.addEventListener('submit', handlers.handleRateFreelancer);
                 document.getElementById('rate-organizer-form')?.addEventListener('submit', handlers.handleRateOrganizer);
                 document.getElementById('report-issue-form')?.addEventListener('submit', handlers.handleReportIssue);
-                document.getElementById('load-funds-form')?.addEventListener('submit', handlers.handleLoadFunds);
+                document.getElementById('load-funds-form')?.addEventListener('submit', handlers.handleConfirmDeposit);
                 document.getElementById('payout-funds-form')?.addEventListener('submit', handlers.handlePayoutFunds);
                 document.getElementById('auto-detect-location-btn')?.addEventListener('click', handlers.handleAutoDetectLocation);
                 document.getElementById('manual-location-form')?.addEventListener('submit', handlers.handleManualLocation);
@@ -2204,11 +2260,16 @@
                 localStorage.setItem('swiftStaffTheme', isDarkMode ? 'dark' : 'light');
                 document.getElementById('theme-toggle-btn').innerHTML = isDarkMode ? '☀️' : '🌙'
             },
-            calculateUrgencyFee: (startTime, budget, positions) => {
+            calculateUrgencyFee: (startTime, budget, positions, endTime) => {
                 const now = new Date();
                 const startDate = new Date(startTime);
+                const endDate = new Date(endTime);
                 const hoursUntilStart = (startDate - now) / (1000 * 60 * 60);
                 
+                // Calculate number of days, rounding up
+                const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                const jobDays = days > 0 ? days : 1;
+
                 let feePercentage = 0;
                 if (hoursUntilStart < 2) {
                     feePercentage = 35; // 35% crisis fee
@@ -2218,12 +2279,12 @@
                     feePercentage = 15; // 15% fee
                 }
 
-                const baseBudget = budget * positions;
+                const baseBudget = budget * positions * jobDays;
                 const feeAmount = baseBudget * (feePercentage / 100);
                 const commission = baseBudget * PLATFORM_COMMISSION;
                 const totalAmount = baseBudget + feeAmount + commission;
 
-                return { baseBudget, feePercentage, feeAmount, commission, totalAmount };
+                return { baseBudget, feePercentage, feeAmount, commission, totalAmount, days: jobDays };
             },
             handlePostJob: (e) => {
                 e.preventDefault();
@@ -2241,7 +2302,7 @@
                     return;
                 }
 
-                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions);
+                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions, endTime);
 
                 if (state.currentUser.wallet < feeDetails.totalAmount) {
                     notifications.showToast(`Insufficient funds. You need ZAR ${feeDetails.totalAmount.toFixed(2)} but only have ZAR ${state.currentUser.wallet.toFixed(2)}.`);
@@ -2263,6 +2324,7 @@
                     },
                     category: document.getElementById('job-category').value,
                     budget: budget,
+                    days: feeDetails.days,
                     urgencyFee: feeDetails.feeAmount,
                     totalBudget: feeDetails.totalAmount,
                     location: {
@@ -2623,8 +2685,9 @@
                 job.assignedFreelancers.forEach(fId => {
                     const freelancer = state.db.users.find(u => u.id === fId);
                     if (freelancer) {
+                        const payoutAmount = job.budget * job.days;
                         const updates = {
-                            wallet: freelancer.wallet + job.budget,
+                            wallet: freelancer.wallet + payoutAmount,
                             reliabilityScore: (freelancer.reliabilityScore || 100) + 5,
                             jobsCompleted: (freelancer.jobsCompleted || 0) + 1,
                         };
@@ -2642,12 +2705,13 @@
                         }
 
                         auth.updateUser(fId, updates);
-                        notifications.create(fId, `You have been paid ZAR ${job.budget.toFixed(2)} for the job "${job.title}".`);
+                        notifications.create(fId, `You have been paid ZAR ${payoutAmount.toFixed(2)} for the job "${job.title}".`);
                     }
                 });
 
                 // Pay platform
-                const platformCommission = job.budget * job.assignedFreelancers.length * PLATFORM_COMMISSION;
+                const totalFreelancerCost = job.budget * job.assignedFreelancers.length * job.days;
+                const platformCommission = totalFreelancerCost * PLATFORM_COMMISSION;
                 const platformTotalEarnings = platformCommission + job.urgencyFee;
                 state.db.platformWallet += platformTotalEarnings;
                 
@@ -2658,16 +2722,21 @@
                 notifications.showToast("Payment successful! All staff have been paid.");
                 ui.render();
             },
-            handleLoadFunds: (e) => {
+            handleConfirmDeposit: (e) => {
                 e.preventDefault();
                 const amount = parseFloat(document.getElementById('load-amount').value);
                 if (amount > 0) {
-                    const newBalance = state.currentUser.wallet + amount;
-                    auth.updateUser(state.currentUser.id, { wallet: newBalance });
-                    document.getElementById('modal-wallet-balance').textContent = `ZAR ${newBalance.toFixed(2)}`;
-                    document.getElementById('wallet-balance').textContent = newBalance.toFixed(2);
-                    document.getElementById('load-funds-form').reset();
-                    notifications.showToast(`ZAR ${amount.toFixed(2)} added to your wallet.`);
+                    const newRequest = {
+                        id: `deposit-${Date.now()}`,
+                        userId: state.currentUser.id,
+                        amount: amount,
+                        status: 'pending',
+                        createdAtISO: new Date().toISOString(),
+                    };
+                    state.db.depositRequests.push(newRequest);
+                    storage.saveDB(state.db);
+                    ui.hideModal('wallet-modal');
+                    notifications.showToast(`Deposit of ZAR ${amount.toFixed(2)} submitted for verification.`);
                 }
             },
             handlePayoutFunds: (e) => {
@@ -2868,6 +2937,23 @@
                 storage.saveDB(state.db);
                 ui.render();
                 notifications.showToast("Payout marked as paid.");
+            },
+            handleApproveDeposit: (depositId) => {
+                const depositIndex = state.db.depositRequests.findIndex(d => d.id === depositId);
+                if (depositIndex === -1) return;
+
+                const deposit = state.db.depositRequests[depositIndex];
+                const user = state.db.users.find(u => u.id === deposit.userId);
+
+                if (user) {
+                    auth.updateUser(user.id, { wallet: user.wallet + deposit.amount });
+                    notifications.create(user.id, `Your deposit of ZAR ${deposit.amount.toFixed(2)} has been approved and added to your wallet.`);
+                }
+
+                state.db.depositRequests[depositIndex].status = 'approved';
+                storage.saveDB(state.db);
+                ui.render();
+                notifications.showToast("Deposit approved.");
             }
         };
 
