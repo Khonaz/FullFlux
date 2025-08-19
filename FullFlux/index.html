@@ -397,6 +397,55 @@
         }
         #chat-form input { flex-grow: 1; }
 
+        /* --- Portfolio Styles --- */
+        #portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        .portfolio-item-card {
+            position: relative;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .portfolio-item-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+        .portfolio-item-card .delete-portfolio-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(244, 67, 54, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 24px;
+            text-align: center;
+        }
+        #portfolio-view-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .portfolio-view-item img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+            margin-bottom: 0.5rem;
+        }
+        .portfolio-view-item p {
+            font-weight: 600;
+            text-align: center;
+        }
+
 
         /* --- Responsive Design --- */
         @media (max-width: 768px) {
@@ -747,6 +796,16 @@
                              <!-- Background check status will be shown here -->
                          </div>
                     </div>
+                    <hr style="margin: 1rem 0;">
+                    <div class="form-group">
+                        <label>My Portfolio</label>
+                        <div id="portfolio-grid" style="margin-bottom: 1rem;"></div>
+                        <form id="add-portfolio-form" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <input type="text" id="portfolio-title" class="form-control" placeholder="Image Title" required style="flex-grow: 1;">
+                            <input type="file" id="portfolio-file" class="form-control" required accept="image/*" style="flex-grow: 1;">
+                            <button type="submit" class="btn btn-secondary">Add</button>
+                        </form>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
             </form>
@@ -888,12 +947,25 @@
         </div>
     </div>
 
+    <!-- NEW: Portfolio View Modal -->
+    <div id="portfolio-view-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="portfolio-view-title">Portfolio</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div id="portfolio-view-content">
+                <!-- Portfolio items will be rendered here -->
+            </div>
+        </div>
+    </div>
+
 
     <!-- Leaflet JS for Map View -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module">
         // --- CONFIG & CONSTANTS ---
-        const DB_VERSION = '1.1.0'; // Updated version for dispute resolution
+        const DB_VERSION = '1.4.0'; // Updated version for minimum rates
         const STORAGE_KEY = 'fullFluxDB';
         const PLATFORM_COMMISSION = 0.20; // 20%
         const REFERRAL_BONUS = 50.00; // ZAR 50
@@ -919,6 +991,28 @@
             "cleaning-crew": "R25 - R40 per hour",
             "brand-ambassador": "R50 - R150 per hour",
             "registration": "R40 - R80 per hour",
+        };
+        // NEW: Minimum daily rates per category
+        const MINIMUM_RATES = {
+            "bartender": 800,
+            "waitstaff": 650,
+            "security": 700,
+            "setup-crew": 750,
+            "cleaning-crew": 600,
+            "brand-ambassador": 850,
+            "registration": 700,
+            "stagehand": 800,
+            "rigger": 900,
+            "logistics-coordinator": 1000,
+            "performer": 1200,
+            "maintenance-tech": 750,
+            "landscaper": 650,
+            "waste-management": 600,
+            "merchandise": 650,
+            "driver": 700,
+            "it-support": 900,
+            "translator": 850,
+            "admin-staff": 700,
         };
 
         // --- STATE ---
@@ -984,12 +1078,12 @@
                 const now = new Date('2025-08-16T15:35:00+02:00');
 
                 const freelancers = [
-                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0, referralCode: 'JOHN-REF-1', referredBy: null, firstJobCompleted: true, bankingDetails: null }, 
-                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0, referralCode: 'JANE-REF-2', referredBy: 'user-f1', firstJobCompleted: true, bankingDetails: { bankName: 'FNB', accountNumber: '123456789', branchCode: '250655'} },
-                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1, referralCode: 'MIKE-REF-3', referredBy: null, firstJobCompleted: true, bankingDetails: null },
-                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0, referralCode: 'SARA-REF-4', referredBy: 'user-f2', firstJobCompleted: false, bankingDetails: null },
-                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2, referralCode: 'PETER-REF-5', referredBy: null, firstJobCompleted: true, bankingDetails: null },
-                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0, referralCode: 'LINDA-REF-6', referredBy: null, firstJobCompleted: true, bankingDetails: null },
+                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0, referralCode: 'JOHN-REF-1', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] }, 
+                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0, referralCode: 'JANE-REF-2', referredBy: 'user-f1', firstJobCompleted: true, bankingDetails: { bankName: 'FNB', accountNumber: '123456789', branchCode: '250655'}, portfolio: [] },
+                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1, referralCode: 'MIKE-REF-3', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] },
+                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0, referralCode: 'SARA-REF-4', referredBy: 'user-f2', firstJobCompleted: false, bankingDetails: null, portfolio: [ {id: 1, title: 'Brand Activation', imageDataURL: 'https://placehold.co/400x300/F9D4D4/333333?text=Event+Photo+1'}] },
+                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2, referralCode: 'PETER-REF-5', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] },
+                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0, referralCode: 'LINDA-REF-6', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] },
                 ];
                 db.users.push(...freelancers);
 
@@ -1096,6 +1190,7 @@
                     newUser.cancellationsCount = 0;
                     newUser.firstJobCompleted = false;
                     newUser.bankingDetails = null;
+                    newUser.portfolio = [];
                 } else if (role === 'client') {
                     newUser.paymentReference = `FF-${displayName.split(' ')[0].toUpperCase().substring(0,4)}-${Math.floor(Math.random() * 100)}`;
                 }
@@ -2020,6 +2115,7 @@
                             }
                             ui.renderDocumentList();
                             ui.renderBackgroundCheckStatus();
+                            ui.renderPortfolioList();
                         } else {
                             freelancerFields.classList.add('hidden');
                         }
@@ -2096,9 +2192,18 @@
                 const category = document.getElementById('job-category').value;
                 const guideContainer = document.getElementById('rate-guide');
                 const rate = RATE_GUIDES[category];
+                const minRate = MINIMUM_RATES[category];
 
+                let content = '';
                 if (rate) {
-                    guideContainer.innerHTML = `<p class="text-muted"><strong>Suggested Rate Guide:</strong> ${rate}</p>`;
+                    content += `<p class="text-muted"><strong>Suggested Rate Guide:</strong> ${rate}</p>`;
+                }
+                if (minRate) {
+                    content += `<p class="text-danger" style="font-weight: bold;">Minimum Daily Budget: ZAR ${minRate.toFixed(2)}</p>`;
+                }
+
+                if (content) {
+                    guideContainer.innerHTML = content;
                     guideContainer.classList.remove('hidden');
                 } else {
                     guideContainer.classList.add('hidden');
@@ -2126,12 +2231,9 @@
                         if (!freelancer) return;
 
                         const applicantEl = document.createElement('div');
-                        applicantEl.style.display = 'flex';
-                        applicantEl.style.justifyContent = 'space-between';
-                        applicantEl.style.alignItems = 'center';
-                        applicantEl.style.padding = '0.5rem 0';
-                        applicantEl.style.borderBottom = '1px solid var(--border-color)';
-
+                        applicantEl.className = 'card';
+                        applicantEl.style.padding = '1rem';
+                        
                         const isVerified = freelancer.documents && freelancer.documents.some(d => d.status === 'verified');
                         const isBgChecked = freelancer.backgroundCheckStatus === 'verified';
                         
@@ -2145,24 +2247,31 @@
 
 
                         applicantEl.innerHTML = `
-                            <div>
-                                <strong>${freelancer.displayName}</strong> ${badges}<br>
-                                <small class="text-muted">Rating: ${freelancer.avgRating} ★ | Reliability: ${freelancer.reliabilityScore}</small>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>${freelancer.displayName}</strong> ${badges}<br>
+                                    <small class="text-muted">Rating: ${freelancer.avgRating} ★ | Reliability: ${freelancer.reliabilityScore}</small>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    ${(freelancer.portfolio && freelancer.portfolio.length > 0) ? `<button class="btn btn-outline" data-freelancer-id="${freelancer.id}">Portfolio</button>` : ''}
+                                    <button class="btn btn-success" data-freelancer-id="${freelancer.id}">Hire</button>
+                                </div>
                             </div>
                         `;
-
-                        const hireBtn = document.createElement('button');
-                        hireBtn.className = 'btn btn-success';
-                        hireBtn.textContent = 'Hire';
+                        
+                        const hireBtn = applicantEl.querySelector('.btn-success');
                         hireBtn.onclick = () => handlers.handleHireFreelancer(jobId, freelancer.id);
                         
-                        // Disable button if already hired for this job
+                        const portfolioBtn = applicantEl.querySelector('.btn-outline');
+                        if (portfolioBtn) {
+                            portfolioBtn.onclick = () => handlers.handleShowPortfolioModal(freelancer.id);
+                        }
+
                         if(job.assignedFreelancers.includes(freelancer.id)) {
                             hireBtn.disabled = true;
                             hireBtn.textContent = 'Hired';
                         }
                         
-                        applicantEl.appendChild(hireBtn);
                         container.appendChild(applicantEl);
                     });
                 }
@@ -2209,6 +2318,28 @@
                     });
                 } else {
                     listEl.innerHTML = '<p class="text-muted">No documents uploaded.</p>';
+                }
+            },
+            renderPortfolioList: () => {
+                const user = state.currentUser;
+                const gridEl = document.getElementById('portfolio-grid');
+                gridEl.innerHTML = '';
+                if (user.portfolio && user.portfolio.length > 0) {
+                    user.portfolio.forEach(item => {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = 'portfolio-item-card';
+                        itemEl.innerHTML = `
+                            <img src="${item.imageDataURL}" alt="${item.title}">
+                            <button class="delete-portfolio-btn" data-item-id="${item.id}">&times;</button>
+                        `;
+                        itemEl.querySelector('.delete-portfolio-btn').addEventListener('click', (e) => {
+                            const itemId = parseInt(e.currentTarget.dataset.itemId, 10);
+                            handlers.handleDeletePortfolioItem(itemId);
+                        });
+                        gridEl.appendChild(itemEl);
+                    });
+                } else {
+                    gridEl.innerHTML = '<p class="text-muted">No portfolio items uploaded yet.</p>';
                 }
             },
             renderBackgroundCheckStatus: () => {
@@ -2370,6 +2501,7 @@
                 document.getElementById('auto-detect-location-btn')?.addEventListener('click', handlers.handleAutoDetectLocation);
                 document.getElementById('manual-location-form')?.addEventListener('submit', handlers.handleManualLocation);
                 document.getElementById('add-document-form')?.addEventListener('submit', handlers.handleAddDocument);
+                document.getElementById('add-portfolio-form')?.addEventListener('submit', handlers.handleAddPortfolioItem);
                 document.getElementById('chat-form')?.addEventListener('submit', handlers.handleSendMessage);
                 document.getElementById('acknowledge-briefing-btn')?.addEventListener('click', handlers.handleAcknowledgeBriefing);
 
@@ -2441,6 +2573,16 @@
             },
             handleSaveJob: (e) => {
                 e.preventDefault();
+                
+                const budget = parseFloat(document.getElementById('job-budget').value);
+                const category = document.getElementById('job-category').value;
+                const minRate = MINIMUM_RATES[category] || 0;
+
+                if (budget < minRate) {
+                    notifications.showToast(`The budget for '${category.replace(/-/g, ' ')}' must be at least ZAR ${minRate.toFixed(2)} per day.`);
+                    return; 
+                }
+
                 const jobId = document.getElementById('job-id').value;
                 if (jobId) {
                     // It's an edit
@@ -2450,7 +2592,6 @@
                     const originalJob = state.db.jobs[jobIndex];
                     const originalTotal = originalJob.totalBudget;
 
-                    const budget = parseFloat(document.getElementById('job-budget').value);
                     const startTime = document.getElementById('job-start-time').value;
                     const endTime = document.getElementById('job-end-time').value;
                     const positions = parseInt(document.getElementById('job-positions').value, 10);
@@ -2710,6 +2851,47 @@
                     notifications.showToast("Document removed.");
                 }
             },
+            handleAddPortfolioItem: async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('portfolio-title').value;
+                const file = document.getElementById('portfolio-file').files[0];
+
+                if (!title || !file) {
+                    notifications.showToast("Please provide both a title and an image file.");
+                    return;
+                }
+
+                const newItem = {
+                    id: Date.now(),
+                    title: title,
+                    imageDataURL: await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    })
+                };
+
+                const user = state.currentUser;
+                if (!user.portfolio) {
+                    user.portfolio = [];
+                }
+                user.portfolio.push(newItem);
+                auth.updateUser(user.id, { portfolio: user.portfolio });
+
+                document.getElementById('add-portfolio-form').reset();
+                ui.renderPortfolioList();
+                notifications.showToast("Portfolio item added.");
+            },
+            handleDeletePortfolioItem: (itemId) => {
+                const user = state.currentUser;
+                const itemIndex = user.portfolio.findIndex(i => i.id === itemId);
+                if (itemIndex > -1) {
+                    user.portfolio.splice(itemIndex, 1);
+                    auth.updateUser(user.id, { portfolio: user.portfolio });
+                    ui.renderPortfolioList();
+                    notifications.showToast("Portfolio item removed.");
+                }
+            },
             handleAdminVerifyDocument: (docId) => {
                 // This is a simulation of an admin action
                 const user = state.currentUser;
@@ -2820,6 +3002,17 @@
                 
                 if (job.assignedFreelancers.length >= job.positionsNeeded) {
                     job.status = 'assigned';
+                    // Notify unsuccessful applicants
+                    const hiredIds = new Set(job.assignedFreelancers);
+                    const unsuccessfulApplicants = job.applicants.filter(app => !hiredIds.has(app.freelancerId));
+
+                    unsuccessfulApplicants.forEach(applicant => {
+                        notifications.create(
+                            applicant.freelancerId, 
+                            `The job "${job.title}" you applied for has now been filled.`,
+                            'general'
+                        );
+                    });
                 }
                 
                 storage.saveDB(state.db);
@@ -3357,6 +3550,29 @@
 
                 ui.hideModal('dispute-resolution-modal');
                 ui.render();
+            },
+            handleShowPortfolioModal: (freelancerId) => {
+                const freelancer = state.db.users.find(u => u.id === freelancerId);
+                if (!freelancer || !freelancer.portfolio || freelancer.portfolio.length === 0) {
+                    notifications.showToast("This user has no portfolio to display.");
+                    return;
+                }
+                
+                document.getElementById('portfolio-view-title').textContent = `${freelancer.displayName}'s Portfolio`;
+                const contentEl = document.getElementById('portfolio-view-content');
+                contentEl.innerHTML = '';
+
+                freelancer.portfolio.forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'portfolio-view-item';
+                    itemEl.innerHTML = `
+                        <img src="${item.imageDataURL}" alt="${item.title}">
+                        <p>${item.title}</p>
+                    `;
+                    contentEl.appendChild(itemEl);
+                });
+
+                ui.showModal('portfolio-view-modal');
             }
         };
 
