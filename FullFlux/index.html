@@ -115,6 +115,7 @@
         .btn-success { background-color: var(--success-color); }
         .btn-danger { background-color: var(--danger-color); }
         .btn-secondary { background-color: #6c757d; }
+        .btn-info { background-color: #17a2b8; }
         .btn-outline {
             background-color: transparent;
             color: var(--primary-color);
@@ -313,6 +314,7 @@
             align-items: center;
             margin-bottom: 2rem;
             flex-wrap: wrap;
+            gap: 1rem;
         }
         #map { 
             height: 400px; 
@@ -513,6 +515,28 @@
             font-size: 3rem;
             color: var(--primary-color);
             margin-bottom: 1rem;
+        }
+
+        /* --- Admin Table --- */
+        .table-container {
+            overflow-x: auto;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .admin-table th, .admin-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .admin-table th {
+            font-weight: 600;
+            background-color: rgba(0,0,0,0.05);
+        }
+        .admin-table tr:hover {
+            background-color: rgba(0,0,0,0.03);
         }
 
 
@@ -1156,7 +1180,7 @@
             currentUser: null,
             db: null,
             timers: [], // To keep track of setIntervals for countdowns
-            currentView: 'dashboard', // To manage which view is active for a freelancer
+            currentView: 'dashboard', // To manage which view is active for a user
             confirmationCallback: null, // To store the action for the confirmation modal
         };
 
@@ -1214,24 +1238,24 @@
                 const now = new Date('2025-08-16T15:35:00+02:00');
 
                 const freelancers = [
-                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0, referralCode: 'JOHN-REF-1', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] }, 
-                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0, referralCode: 'JANE-REF-2', referredBy: 'user-f1', firstJobCompleted: true, bankingDetails: { bankName: 'FNB', accountNumber: '123456789', branchCode: '250655'}, portfolio: [] },
-                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1, referralCode: 'MIKE-REF-3', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] },
-                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0, referralCode: 'SARA-REF-4', referredBy: 'user-f2', firstJobCompleted: false, bankingDetails: null, portfolio: [ {id: 1, title: 'Brand Activation', imageDataURL: 'https://placehold.co/400x300/F9D4D4/333333?text=Event+Photo+1'}] },
-                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2, referralCode: 'PETER-REF-5', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] },
-                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0, referralCode: 'LINDA-REF-6', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [] },
+                    { id: `user-f1`, role: "freelancer", username: "john_d", passwordHash: "a", displayName: "John Doe", photoDataURL: `https://placehold.co/100x100/EFEFEFF/333333?text=JD`, skills: ["waitstaff", "bartender"], avgRating: 4.8, ratingsCount: 12, wallet: 1250, availability: "available", lastKnownLocation: { lat: -26.1076, lng: 28.0567 }, bio: "Experienced bartender...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 110, jobsCompleted: 2, cancellationsCount: 0, referralCode: 'JOHN-REF-1', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [], createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString() }, 
+                    { id: `user-f2`, role: "freelancer", username: "jane_s", passwordHash: "a", displayName: "Jane Smith", photoDataURL: `https://placehold.co/100x100/F9D4D4/333333?text=JS`, skills: ["registration", "setup-crew"], avgRating: 4.5, ratingsCount: 8, wallet: 800, availability: "available", lastKnownLocation: { lat: -26.1392, lng: 28.0428 }, bio: "Organized and efficient...", documents: [{id: 1, name: "ID Document", fileName: "id_scan.pdf", status: 'verified'}], backgroundCheckStatus: 'none', reliabilityScore: 125, jobsCompleted: 5, cancellationsCount: 0, referralCode: 'JANE-REF-2', referredBy: 'user-f1', firstJobCompleted: true, bankingDetails: { bankName: 'FNB', accountNumber: '123456789', branchCode: '250655'}, portfolio: [], createdAt: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `user-f3`, role: "freelancer", username: "mike_b", passwordHash: "a", displayName: "Mike Brown", photoDataURL: `https://placehold.co/100x100/D4F9E0/333333?text=MB`, skills: ["cleaning-crew"], avgRating: 5.0, ratingsCount: 20, wallet: 2500, availability: "away", lastKnownLocation: { lat: -26.1952, lng: 28.0358 }, bio: "Lead a small cleaning team...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 75, jobsCompleted: 10, cancellationsCount: 1, referralCode: 'MIKE-REF-3', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [], createdAt: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `user-f4`, role: "freelancer", username: "sara_l", passwordHash: "a", displayName: "Sara Lee", photoDataURL: `https://placehold.co/100x100/D4E9F9/333333?text=SL`, skills: ["waitstaff", "brand-ambassador"], avgRating: 4.7, ratingsCount: 5, wallet: 450, availability: "available", lastKnownLocation: { lat: -26.1094, lng: 28.0596 }, bio: "Engaging brand ambassador...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 105, jobsCompleted: 1, cancellationsCount: 0, referralCode: 'SARA-REF-4', referredBy: 'user-f2', firstJobCompleted: false, bankingDetails: null, portfolio: [ {id: 1, title: 'Brand Activation', imageDataURL: 'https://placehold.co/400x300/F9D4D4/333333?text=Event+Photo+1'}], createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `user-f5`, role: "freelancer", username: "peter_j", passwordHash: "a", displayName: "Peter Jones", photoDataURL: `https://placehold.co/100x100/FFF9C4/333333?text=PJ`, skills: ["setup-crew", "cleaning-crew", "stagehand"], avgRating: 4.2, ratingsCount: 15, wallet: 1800, availability: "available", lastKnownLocation: { lat: -26.0345, lng: 28.0623 }, bio: "Hardworking and physically fit...", documents: [], backgroundCheckStatus: 'none', reliabilityScore: 90, jobsCompleted: 8, cancellationsCount: 2, referralCode: 'PETER-REF-5', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [], createdAt: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `user-f6`, role: "freelancer", username: "linda_m", passwordHash: "a", displayName: "Linda M.", photoDataURL: `https://placehold.co/100x100/E1BEE7/333333?text=LM`, skills: ["bartender", "security"], avgRating: 4.9, ratingsCount: 25, wallet: 3200, availability: "available", lastKnownLocation: { lat: -26.148, lng: 28.032 }, bio: "Certified security personnel...", documents: [{id: 1, name: "Security License", fileName: "sec_cert.pdf", status: 'verified'}], backgroundCheckStatus: 'verified', reliabilityScore: 150, jobsCompleted: 10, cancellationsCount: 0, referralCode: 'LINDA-REF-6', referredBy: null, firstJobCompleted: true, bankingDetails: null, portfolio: [], createdAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString() },
                 ];
                 db.users.push(...freelancers);
 
                 const clients = [
-                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15, referralCode: 'EVENTCO-REF-1', paymentReference: 'FF-EVCO-01' },
-                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22, referralCode: 'GALA-REF-2', paymentReference: 'FF-GALA-02' },
-                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30, referralCode: 'WEDDINGS-REF-3', paymentReference: 'FF-WED-03' },
+                    { id: `user-c1`, role: "client", username: "eventco", passwordHash: "a", displayName: "Event Co.", wallet: 5000, avgRating: 4.9, ratingsCount: 15, referralCode: 'EVENTCO-REF-1', paymentReference: 'FF-EVCO-01', createdAt: new Date(now.getTime() - 50 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `user-c2`, role: "client", username: "gala_planner", passwordHash: "a", displayName: "Gala Planners Inc.", wallet: 10000, avgRating: 5.0, ratingsCount: 22, referralCode: 'GALA-REF-2', paymentReference: 'FF-GALA-02', createdAt: new Date(now.getTime() - 40 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: `user-c3`, role: "client", username: "weddings_r_us", passwordHash: "a", displayName: "Weddings R Us", wallet: 7500, avgRating: 4.7, ratingsCount: 30, referralCode: 'WEDDINGS-REF-3', paymentReference: 'FF-WED-03', createdAt: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString() },
                 ];
                 db.users.push(...clients);
 
                 // Add Admin User
-                db.users.push({ id: 'user-admin', role: 'admin', username: 'admin', passwordHash: 'a', displayName: 'Admin' });
+                db.users.push({ id: 'user-admin', role: 'admin', username: 'admin', passwordHash: 'a', displayName: 'Admin', createdAt: new Date(now.getTime() - 100 * 24 * 60 * 60 * 1000).toISOString() });
 
                 const jobs = [
                     { id: `job-1`, title: "Urgent Bartenders for Gala", briefing: "- Dress code: All black, formal.\n- Report to Maria at the main bar.\n- Familiarize yourself with our signature cocktail menu upon arrival.", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", hourlyRate: 120, totalHours: 6.5, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 1.5 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 546, totalBudget: 2466 }, 
@@ -1486,6 +1510,8 @@
                         ui.renderAdminSettings();
                     } else if (user.role === 'admin' && state.currentView === 'adminDisputes') {
                         ui.renderAdminDisputes();
+                    } else if (user.role === 'admin' && state.currentView === 'adminUsers') {
+                        ui.renderAdminUsers();
                     } else if (user.role === 'admin') {
                         ui.renderAdminDashboard();
                     } else if (user.role === 'freelancer' && state.currentView === 'history') {
@@ -1915,6 +1941,7 @@
                     <div class="dashboard-header">
                         <h2>Admin Dashboard</h2>
                         <div>
+                            <button id="admin-users-btn" class="btn btn-info">Manage Users</button>
                             <button id="admin-disputes-btn" class="btn btn-warning" style="position: relative;">
                                 Manage Disputes
                                 ${openDisputes.length > 0 ? `<span class="notification-badge">${openDisputes.length}</span>` : ''}
@@ -1932,6 +1959,10 @@
                     </div>
                 `;
 
+                document.getElementById('admin-users-btn').addEventListener('click', () => {
+                    state.currentView = 'adminUsers';
+                    ui.render();
+                });
                 document.getElementById('admin-settings-btn').addEventListener('click', () => {
                     state.currentView = 'adminSettings';
                     ui.render();
@@ -1951,6 +1982,55 @@
                     button.addEventListener('click', (e) => {
                         handlers.handleApproveDeposit(e.target.dataset.depositId);
                     });
+                });
+            },
+            renderAdminUsers: () => {
+                const root = document.getElementById('app-root');
+                const users = state.db.users.filter(u => u.role !== 'admin'); // Exclude admin
+
+                let tableRows = users.map(user => {
+                    const registeredDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+                    return `
+                        <tr>
+                            <td>${user.displayName}</td>
+                            <td>${user.username}</td>
+                            <td><span class="badge badge-${user.role === 'client' ? 'info' : 'success'}">${user.role}</span></td>
+                            <td class="text-success">ZAR ${user.wallet.toFixed(2)}</td>
+                            <td>${user.role === 'freelancer' ? user.reliabilityScore : 'N/A'}</td>
+                            <td>${registeredDate}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                root.innerHTML = `
+                    <div class="dashboard-header">
+                        <h2>User Management</h2>
+                        <button id="admin-dashboard-btn" class="btn btn-outline">Back to Dashboard</button>
+                    </div>
+                    <div class="card">
+                        <div class="table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Display Name</th>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Wallet</th>
+                                        <th>Reliability</th>
+                                        <th>Registered</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                 document.getElementById('admin-dashboard-btn').addEventListener('click', () => {
+                    state.currentView = 'dashboard';
+                    ui.render();
                 });
             },
             renderAdminSettings: () => {
