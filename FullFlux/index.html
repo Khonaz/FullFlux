@@ -446,6 +446,75 @@
             text-align: center;
         }
 
+        /* --- Landing Page Styles --- */
+        .section {
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            color: var(--font-color-muted);
+        }
+        .hero-section {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        .hero-section p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            color: var(--font-color-muted);
+        }
+        .how-it-works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .step-card {
+            text-align: center;
+        }
+        .step-card .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-main);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem auto;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .feature-card {
+            text-align: center;
+        }
+        .feature-card .icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
 
         /* --- Responsive Design --- */
         @media (max-width: 768px) {
@@ -461,6 +530,9 @@
             }
             .dashboard-header h2 {
                 text-align: center;
+            }
+            .hero-section h1 {
+                font-size: 2.5rem;
             }
         }
     </style>
@@ -484,6 +556,72 @@
     <div id="toast-container"></div>
 
     <!-- Templates for Dynamic Content -->
+    <template id="landing-page-template">
+        <div>
+            <section class="hero-section">
+                <h1>Need Event Staff, Fast?</h1>
+                <p>FullFlux instantly connects event organizers with reliable, vetted freelancers for any last-minute need.</p>
+                <button id="hero-cta-btn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.2rem;">Get Started Now</button>
+            </section>
+
+            <div id="auth-container" class="hidden">
+                <!-- Login/Register form will be injected here -->
+            </div>
+
+            <section class="section">
+                <h2 class="section-title">How It Works</h2>
+                <div class="how-it-works-grid">
+                    <div class="step-card card">
+                        <div class="step-number">1</div>
+                        <h3>Organizers Post a Job</h3>
+                        <p class="text-muted">Quickly detail your needs, set an hourly rate, and escrow the funds securely.</p>
+                    </div>
+                    <div class="step-card card">
+                        <div class="step-number">2</div>
+                        <h3>Workers Get Notified</h3>
+                        <p class="text-muted">Available freelancers with the right skills in your area are instantly alerted.</p>
+                    </div>
+                    <div class="step-card card">
+                        <div class="step-number">3</div>
+                        <h3>Hire the Best Fit</h3>
+                        <p class="text-muted">Review profiles, ratings, and portfolios to hire the perfect person for the job in minutes.</p>
+                    </div>
+                    <div class="step-card card">
+                        <div class="step-number">4</div>
+                        <h3>Get Paid Instantly</h3>
+                        <p class="text-muted">Once the job is marked complete, funds are released to the worker's wallet immediately.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Why Choose FullFlux?</h2>
+                <div class="features-grid">
+                    <div class="feature-card card">
+                        <div class="icon">⚡️</div>
+                        <h3>Speed & Urgency</h3>
+                        <p class="text-muted">Our platform is built for the last-minute nature of events. Fill positions in hours, not days.</p>
+                    </div>
+                    <div class="feature-card card">
+                        <div class="icon">🛡️</div>
+                        <h3>Trust & Security</h3>
+                        <p class="text-muted">With our escrow system and dispute resolution, both parties are protected from start to finish.</p>
+                    </div>
+                    <div class="feature-card card">
+                        <div class="icon">⭐</div>
+                        <h3>Quality & Reliability</h3>
+                        <p class="text-muted">Our rating and Reliability Score system helps you find the best, most professional talent.</p>
+                    </div>
+                </div>
+            </section>
+             <section class="section text-center">
+                <h2 class="section-title">Ready to Get Started?</h2>
+                <p class="section-subtitle">Whether you're an organizer needing urgent help or a freelancer looking for your next gig, FullFlux is the answer.</p>
+                <button id="bottom-cta-btn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.2rem;">Sign Up or Login</button>
+            </section>
+        </div>
+    </template>
+
     <template id="login-template">
         <div class="card" style="max-width: 450px; margin: 2rem auto;">
             <div class="card-header">
@@ -528,8 +666,9 @@
                 <span class="badge job-category"></span>
             </div>
             <div class="job-description"></div>
-            <p><strong>Budget:</strong> ZAR <span class="job-budget"></span> <span class="job-pay-rate"></span></p>
+            <p><strong>Rate:</strong> ZAR <span class="job-rate"></span> <span class="job-pay-rate"></span></p>
             <p><strong>Dates:</strong> <span class="job-dates"></span></p>
+            <p><strong>Duration:</strong> <span class="job-duration"></span> hours</p>
             <p><strong>Location:</strong> <span class="job-location"></span> (<span class="job-distance"></span> km away)</p>
             <p><strong>Positions:</strong> <span class="job-positions"></span></p>
             <p><strong>Status:</strong> <span class="badge job-status"></span></p>
@@ -619,8 +758,8 @@
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex-grow: 1;">
-                        <label for="job-budget">Budget (ZAR per person, per day)</label>
-                        <input type="number" id="job-budget" class="form-control" required min="1">
+                        <label for="job-hourly-rate">Hourly Rate (ZAR per person)</label>
+                        <input type="number" id="job-hourly-rate" class="form-control" required min="1">
                     </div>
                     <div class="form-group" style="width: 120px;">
                         <label for="job-positions"># of Staff</label>
@@ -909,14 +1048,14 @@
             <h4>For Freelancers (Workers)</h4>
             <p class="text-muted">Cancelling a job you have been assigned to has consequences:</p>
             <ul>
-                <li>A <strong>25% penalty fee</strong> (based on the job budget) will be deducted from your wallet.</li>
+                <li>A <strong>25% penalty fee</strong> (based on the total job value) will be deducted from your wallet.</li>
                 <li>Your <strong>Reliability Score</strong> will be significantly impacted.</li>
             </ul>
             <hr style="margin: 1rem 0;">
             <h4>For Clients (Organizers)</h4>
             <p class="text-muted">Cancelling a job after hiring freelancers has consequences:</p>
             <ul>
-                <li>You must pay a <strong>50% cancellation fee</strong> to each hired freelancer to compensate them for their commitment.</li>
+                <li>You must pay a <strong>50% cancellation fee</strong> of the total job value to each hired freelancer to compensate them for their commitment.</li>
                 <li>This amount will be deducted from your wallet and transferred directly to the freelancers.</li>
             </ul>
         </div>
@@ -965,7 +1104,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module">
         // --- CONFIG & CONSTANTS ---
-        const DB_VERSION = '1.4.0'; // Updated version for minimum rates
+        const DB_VERSION = '1.5.0'; // Updated version for hourly rates
         const STORAGE_KEY = 'fullFluxDB';
         const PLATFORM_COMMISSION = 0.20; // 20%
         const REFERRAL_BONUS = 50.00; // ZAR 50
@@ -983,36 +1122,33 @@
             "parkhurst": { lat: -26.148, lng: 28.032 },
             "default": { lat: -26.2041, lng: 28.0473 } // Johannesburg default
         };
-        const RATE_GUIDES = {
-            "bartender": "R25 - R90 per hour",
-            "waitstaff": "R25 - R50 per hour",
-            "security": "R22 - R30 per hour",
-            "setup-crew": "R30 - R75 per hour",
-            "cleaning-crew": "R25 - R40 per hour",
-            "brand-ambassador": "R50 - R150 per hour",
-            "registration": "R40 - R80 per hour",
+        const MINIMUM_HOURLY_RATES = {
+            "bartender": 80, "waitstaff": 65, "security": 70, "setup-crew": 75,
+            "cleaning-crew": 60, "brand-ambassador": 85, "registration": 70, "stagehand": 80,
+            "rigger": 90, "logistics-coordinator": 100, "performer": 120, "maintenance-tech": 75,
+            "landscaper": 65, "waste-management": 60, "merchandise": 65, "driver": 70,
+            "it-support": 90, "translator": 85, "admin-staff": 70,
         };
-        // NEW: Minimum daily rates per category
-        const MINIMUM_RATES = {
-            "bartender": 800,
-            "waitstaff": 650,
-            "security": 700,
-            "setup-crew": 750,
-            "cleaning-crew": 600,
-            "brand-ambassador": 850,
-            "registration": 700,
-            "stagehand": 800,
-            "rigger": 900,
-            "logistics-coordinator": 1000,
-            "performer": 1200,
-            "maintenance-tech": 750,
-            "landscaper": 650,
-            "waste-management": 600,
-            "merchandise": 650,
-            "driver": 700,
-            "it-support": 900,
-            "translator": 850,
-            "admin-staff": 700,
+        const RATE_GUIDES = {
+            "bartender": `R${MINIMUM_HOURLY_RATES.bartender} - R150 per hour`,
+            "waitstaff": `R${MINIMUM_HOURLY_RATES.waitstaff} - R100 per hour`,
+            "security": `R${MINIMUM_HOURLY_RATES.security} - R120 per hour`,
+            "setup-crew": `R${MINIMUM_HOURLY_RATES['setup-crew']} - R130 per hour`,
+            "cleaning-crew": `R${MINIMUM_HOURLY_RATES['cleaning-crew']} - R90 per hour`,
+            "brand-ambassador": `R${MINIMUM_HOURLY_RATES['brand-ambassador']} - R160 per hour`,
+            "registration": `R${MINIMUM_HOURLY_RATES.registration} - R110 per hour`,
+            "stagehand": `R${MINIMUM_HOURLY_RATES.stagehand} - R140 per hour`,
+            "rigger": `R${MINIMUM_HOURLY_RATES.rigger} - R180 per hour`,
+            "logistics-coordinator": `R${MINIMUM_HOURLY_RATES['logistics-coordinator']} - R200 per hour`,
+            "performer": `R${MINIMUM_HOURLY_RATES.performer} - R250 per hour`,
+            "maintenance-tech": `R${MINIMUM_HOURLY_RATES['maintenance-tech']} - R150 per hour`,
+            "landscaper": `R${MINIMUM_HOURLY_RATES.landscaper} - R100 per hour`,
+            "waste-management": `R${MINIMUM_HOURLY_RATES['waste-management']} - R90 per hour`,
+            "merchandise": `R${MINIMUM_HOURLY_RATES.merchandise} - R100 per hour`,
+            "driver": `R${MINIMUM_HOURLY_RATES.driver} - R120 per hour`,
+            "it-support": `R${MINIMUM_HOURLY_RATES['it-support']} - R180 per hour`,
+            "translator": `R${MINIMUM_HOURLY_RATES.translator} - R170 per hour`,
+            "admin-staff": `R${MINIMUM_HOURLY_RATES['admin-staff']} - R120 per hour`,
         };
 
         // --- STATE ---
@@ -1098,12 +1234,12 @@
                 db.users.push({ id: 'user-admin', role: 'admin', username: 'admin', passwordHash: 'a', displayName: 'Admin' });
 
                 const jobs = [
-                    { id: `job-1`, title: "Urgent Bartenders for Gala", briefing: "- Dress code: All black, formal.\n- Report to Maria at the main bar.\n- Familiarize yourself with our signature cocktail menu upon arrival.", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", budget: 1500, days: 1, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 1.5 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 525, totalBudget: 3525 }, 
-                    { id: `job-2`, title: "3-Day Music Festival Setup", briefing: "", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", budget: 800, days: 3, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 14 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + (14 + 48) * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 1200, totalBudget: 9200 },
-                    { id: `job-3`, title: "Corporate Event Greeters", briefing: "Meet Thabo at the registration desk 30 minutes prior to event start. Attire is business professional. Main duty is to check-in guests via the provided tablets.", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", budget: 750, days: 1, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 10 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], acknowledgedBriefing: [freelancers[1].id], checkedIn: [], urgencyFee: 0, totalBudget: 2250 }, 
-                    { id: `job-4`, title: "Post-Wedding Cleanup", briefing: "", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", budget: 600, days: 1, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 2400 },
-                    { id: `job-5`, title: "Charity Fun Run Marshals", briefing: "", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", budget: 500, days: 1, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - (7 * 24 - 2) * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() - (7 * 24 - 8) * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 1000 },
-                    { id: `job-6`, title: "New Year's Eve Security", briefing: "Stationed at main entrance. Check IDs and wristbands. Radio contact is channel 3. Report any issues to the event manager on duty.", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", budget: 2000, days: 1, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), startTimeISO: new Date('2025-01-01T20:00:00+02:00').toISOString(), endTimeISO: new Date('2025-01-02T04:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], acknowledgedBriefing: [freelancers[5].id], checkedIn: [], urgencyFee: 0, totalBudget: 2000 },
+                    { id: `job-1`, title: "Urgent Bartenders for Gala", briefing: "- Dress code: All black, formal.\n- Report to Maria at the main bar.\n- Familiarize yourself with our signature cocktail menu upon arrival.", positionsNeeded: 2, description: {responsibilities: "Serve high-end cocktails.", requirements: "3+ years experience.", contact: "Maria"}, category: "bartender", hourlyRate: 120, totalHours: 6.5, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Sun Hotel" }, radiusKm: 5, createdAtISO: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 1.5 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[1].id, applicants: [{freelancerId: freelancers[0].id, appliedAtISO: new Date(now.getTime() - 2 * 60 * 1000).toISOString()}], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 546, totalBudget: 2466 }, 
+                    { id: `job-2`, title: "3-Day Music Festival Setup", briefing: "", positionsNeeded: 10, description: {responsibilities: "Assist with stage and fencing setup.", requirements: "Physically fit.", contact: "Mike"}, category: "setup-crew", hourlyRate: 80, totalHours: 24, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 14 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + (14 + 48) * 60 * 60 * 1000).toISOString(), status: "open", clientId: clients[0].id, applicants: [], assignedFreelancers: [], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 2880, totalBudget: 22080 },
+                    { id: `job-3`, title: "Corporate Event Greeters", briefing: "Meet Thabo at the registration desk 30 minutes prior to event start. Attire is business professional. Main duty is to check-in guests via the provided tablets.", positionsNeeded: 3, description: {responsibilities: "Welcome guests and check names.", requirements: "Professional attire.", contact: "Thabo"}, category: "registration", hourlyRate: 90, totalHours: 8, location: { lat: -26.1076, lng: 28.0567, areaName: "Sandton Convention Centre" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() + 10 * 60 * 60 * 1000).toISOString(), status: "assigned", clientId: clients[0].id, applicants: [], assignedFreelancers: [freelancers[1].id, freelancers[3].id, freelancers[4].id], acknowledgedBriefing: [freelancers[1].id], checkedIn: [], urgencyFee: 0, totalBudget: 2592 }, 
+                    { id: `job-4`, title: "Post-Wedding Cleanup", briefing: "", positionsNeeded: 4, description: {responsibilities: "General cleaning of venue.", requirements: "None", contact: "Susan"}, category: "cleaning-crew", hourlyRate: 70, totalHours: 4, location: { lat: -26.148, lng: 28.032, areaName: "Parkhurst" }, radiusKm: 15, createdAtISO: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), status: "completed", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[2].id, freelancers[4].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 1344 },
+                    { id: `job-5`, title: "Charity Fun Run Marshals", briefing: "", positionsNeeded: 2, description: {responsibilities: "Direct runners on the course.", requirements: "None", contact: "David"}, category: "brand-ambassador", hourlyRate: 85, totalHours: 6, location: { lat: -26.1392, lng: 28.0428, areaName: "Rosebank" }, radiusKm: 10, createdAtISO: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), startTimeISO: new Date(now.getTime() - (7 * 24 - 2) * 60 * 60 * 1000).toISOString(), endTimeISO: new Date(now.getTime() - (7 * 24 - 8) * 60 * 60 * 1000).toISOString(), status: "paid", clientId: clients[2].id, applicants: [], assignedFreelancers: [freelancers[0].id, freelancers[3].id], acknowledgedBriefing: [], checkedIn: [], urgencyFee: 0, totalBudget: 1224 },
+                    { id: `job-6`, title: "New Year's Eve Security", briefing: "Stationed at main entrance. Check IDs and wristbands. Radio contact is channel 3. Report any issues to the event manager on duty.", positionsNeeded: 1, description: {responsibilities: "Monitor entrance.", requirements: "Security cert.", contact: "Manager"}, category: "security", hourlyRate: 250, totalHours: 8, location: { lat: -26.1952, lng: 28.0358, areaName: "Braamfontein" }, radiusKm: 10, createdAtISO: new Date('2025-01-01T02:00:00+02:00').toISOString(), startTimeISO: new Date('2025-01-01T20:00:00+02:00').toISOString(), endTimeISO: new Date('2025-01-02T04:00:00+02:00').toISOString(), status: "completed", clientId: clients[1].id, applicants: [], assignedFreelancers: [freelancers[5].id], acknowledgedBriefing: [freelancers[5].id], checkedIn: [], urgencyFee: 0, totalBudget: 2400 },
                 ];
                 db.jobs.push(...jobs);
 
@@ -1364,17 +1500,34 @@
                         ui.renderFreelancerDashboard();
                     }
                 } else {
-                    state.currentView = 'dashboard'; // Reset on logout
-                    ui.renderLogin();
+                    ui.renderLandingPage();
                 }
                 ui.attachGlobalListeners();
             },
-            renderLogin: () => {
+            renderLandingPage: () => {
                 const root = document.getElementById('app-root');
-                const template = document.getElementById('login-template');
+                const template = document.getElementById('landing-page-template');
                 root.innerHTML = template.innerHTML;
 
-                let isRegistering = false;
+                document.getElementById('hero-cta-btn').addEventListener('click', ui.showAuthForm);
+                document.getElementById('bottom-cta-btn').addEventListener('click', ui.showAuthForm);
+                document.getElementById('main-nav').innerHTML = `
+                    <button id="login-nav-btn" class="btn btn-outline">Login / Register</button>
+                    <button id="theme-toggle-btn" class="theme-toggle">${document.body.classList.contains('dark-mode') ? '☀️' : '🌙'}</button>
+                `;
+                document.getElementById('login-nav-btn').addEventListener('click', ui.showAuthForm);
+                document.getElementById('theme-toggle-btn').addEventListener('click', handlers.handleThemeToggle);
+            },
+            showAuthForm: () => {
+                const authContainer = document.getElementById('auth-container');
+                const template = document.getElementById('login-template');
+                authContainer.innerHTML = template.innerHTML;
+                authContainer.classList.remove('hidden');
+                authContainer.scrollIntoView({ behavior: 'smooth' });
+                ui.attachLoginListeners();
+            },
+            attachLoginListeners: () => {
+                 let isRegistering = false;
 
                 const title = document.getElementById('auth-title');
                 const form = document.getElementById('auth-form');
@@ -1630,8 +1783,7 @@
                 let yearEarnings = 0;
 
                 myJobs.forEach(job => {
-                    const jobDays = job.days || 1;
-                    const earnings = job.budget * jobDays;
+                    const earnings = job.hourlyRate * job.totalHours;
                     totalEarnings += earnings;
                     const jobDate = new Date(job.createdAtISO);
                     if (jobDate.getFullYear() === currentYear) {
@@ -1661,7 +1813,7 @@
                             <th style="padding: 0.5rem; text-align: left;">Date</th>
                             <th style="padding: 0.5rem; text-align: left;">Job Title</th>
                             <th style="padding: 0.5rem; text-align: left;">Client</th>
-                            <th style="padding: 0.5rem; text-align: right;">Budget</th>
+                            <th style="padding: 0.5rem; text-align: right;">Earnings</th>
                             <th style="padding: 0.5rem; text-align: center;">Status</th>
                         </tr>
                     </thead>
@@ -1678,7 +1830,7 @@
                         <td style="padding: 0.5rem;">${new Date(job.createdAtISO).toLocaleDateString()}</td>
                         <td style="padding: 0.5rem;">${job.title}</td>
                         <td style="padding: 0.5rem;">${client ? client.displayName : 'N/A'}</td>
-                        <td style="padding: 0.5rem; text-align: right;">ZAR ${(job.budget * (job.days || 1)).toFixed(2)}</td>
+                        <td style="padding: 0.5rem; text-align: right;">ZAR ${(job.hourlyRate * job.totalHours).toFixed(2)}</td>
                         <td style="padding: 0.5rem; text-align: center;"><span class="badge badge-${job.status === 'paid' ? 'success' : 'warning'}">${job.status}</span></td>
                     `;
                     tbody.appendChild(row);
@@ -1705,7 +1857,7 @@
                 eligibleJobs.forEach(job => {
                     L.marker([job.location.lat, job.location.lng])
                         .addTo(map)
-                        .bindPopup(`<b>${job.title}</b><br>${job.location.areaName}<br>Budget: R${job.budget}`);
+                        .bindPopup(`<b>${job.title}</b><br>${job.location.areaName}<br>Rate: R${job.hourlyRate}/hr`);
                 });
 
                 if (state.currentUser.lastKnownLocation) {
@@ -1916,10 +2068,10 @@
                     <p><strong>Requirements:</strong> ${job.description.requirements || 'Not specified'}</p>
                 `;
 
-                const jobDays = job.days || 1;
-                card.querySelector('.job-budget').textContent = job.budget.toFixed(2);
-                card.querySelector('.job-pay-rate').textContent = jobDays > 1 ? `(per day)` : '';
-                card.querySelector('.job-dates').textContent = `${new Date(job.startTimeISO).toLocaleDateString()} - ${new Date(job.endTimeISO).toLocaleDateString()}`;
+                card.querySelector('.job-rate').textContent = job.hourlyRate.toFixed(2);
+                card.querySelector('.job-pay-rate').textContent = `(per hour)`;
+                card.querySelector('.job-dates').textContent = `${new Date(job.startTimeISO).toLocaleDateString()}`;
+                card.querySelector('.job-duration').textContent = job.totalHours.toFixed(1);
 
                 card.querySelector('.job-location').textContent = job.location.areaName;
                 card.querySelector('.job-distance').textContent = distance;
@@ -2147,7 +2299,7 @@
                             categorySelect.appendChild(optgroup);
                         }
                         // Add listeners for dynamic fee calculation
-                        document.getElementById('job-budget').addEventListener('input', ui.updateFeeCalculation);
+                        document.getElementById('job-hourly-rate').addEventListener('input', ui.updateFeeCalculation);
                         document.getElementById('job-start-time').addEventListener('input', ui.updateFeeCalculation);
                         document.getElementById('job-end-time').addEventListener('input', ui.updateFeeCalculation);
                         document.getElementById('job-positions').addEventListener('input', ui.updateFeeCalculation);
@@ -2162,26 +2314,26 @@
                 const container = document.getElementById('fee-calculation');
                 if (!container) return;
 
-                const budgetInput = document.getElementById('job-budget');
+                const hourlyRateInput = document.getElementById('job-hourly-rate');
                 const startTimeInput = document.getElementById('job-start-time');
                 const endTimeInput = document.getElementById('job-end-time');
                 const positionsInput = document.getElementById('job-positions');
 
-                const budget = parseFloat(budgetInput.value) || 0;
+                const hourlyRate = parseFloat(hourlyRateInput.value) || 0;
                 const startTime = startTimeInput.value;
                 const endTime = endTimeInput.value;
                 const positions = parseInt(positionsInput.value) || 1;
 
-                if (budget <= 0 || !startTime || !endTime) {
-                    container.innerHTML = '<p class="text-muted">Enter budget and dates to see the cost breakdown.</p>';
+                if (hourlyRate <= 0 || !startTime || !endTime) {
+                    container.innerHTML = '<p class="text-muted">Enter rate and dates to see the cost breakdown.</p>';
                     return;
                 }
 
-                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions, endTime);
+                const feeDetails = handlers.calculateUrgencyFee(startTime, hourlyRate, positions, endTime);
 
                 container.innerHTML = `
-                    <h4>Cost Breakdown (${feeDetails.days} Day${feeDetails.days > 1 ? 's' : ''})</h4>
-                    <p>Base Budget: ZAR ${feeDetails.baseBudget.toFixed(2)}</p>
+                    <h4>Cost Breakdown (${feeDetails.totalHours.toFixed(1)} hours)</h4>
+                    <p>Base Pay: ZAR ${feeDetails.baseBudget.toFixed(2)}</p>
                     <p>Urgency Fee (${feeDetails.feePercentage}%): <span class="${feeDetails.feeAmount > 0 ? 'text-warning' : ''}">ZAR ${feeDetails.feeAmount.toFixed(2)}</span></p>
                     <p>Platform Commission (20%): ZAR ${feeDetails.commission.toFixed(2)}</p>
                     <hr style="margin: 0.5rem 0;">
@@ -2192,14 +2344,14 @@
                 const category = document.getElementById('job-category').value;
                 const guideContainer = document.getElementById('rate-guide');
                 const rate = RATE_GUIDES[category];
-                const minRate = MINIMUM_RATES[category];
+                const minRate = MINIMUM_HOURLY_RATES[category];
 
                 let content = '';
                 if (rate) {
                     content += `<p class="text-muted"><strong>Suggested Rate Guide:</strong> ${rate}</p>`;
                 }
                 if (minRate) {
-                    content += `<p class="text-danger" style="font-weight: bold;">Minimum Daily Budget: ZAR ${minRate.toFixed(2)}</p>`;
+                    content += `<p class="text-danger" style="font-weight: bold;">Minimum Hourly Rate: ZAR ${minRate.toFixed(2)}</p>`;
                 }
 
                 if (content) {
@@ -2545,15 +2697,13 @@
                 localStorage.setItem('swiftStaffTheme', isDarkMode ? 'dark' : 'light');
                 document.getElementById('theme-toggle-btn').innerHTML = isDarkMode ? '☀️' : '🌙'
             },
-            calculateUrgencyFee: (startTime, budget, positions, endTime) => {
+            calculateUrgencyFee: (startTime, hourlyRate, positions, endTime) => {
                 const now = new Date();
                 const startDate = new Date(startTime);
                 const endDate = new Date(endTime);
                 const hoursUntilStart = (startDate - now) / (1000 * 60 * 60);
                 
-                // Calculate number of days, rounding up
-                const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                const jobDays = days > 0 ? days : 1;
+                const totalHours = Math.max(0, (endDate - startDate) / (1000 * 60 * 60));
 
                 let feePercentage = 0;
                 if (hoursUntilStart < 2) {
@@ -2564,22 +2714,22 @@
                     feePercentage = 15; // 15% fee
                 }
 
-                const baseBudget = budget * positions * jobDays;
+                const baseBudget = hourlyRate * totalHours * positions;
                 const feeAmount = baseBudget * (feePercentage / 100);
                 const commission = baseBudget * PLATFORM_COMMISSION;
                 const totalAmount = baseBudget + feeAmount + commission;
 
-                return { baseBudget, feePercentage, feeAmount, commission, totalAmount, days: jobDays };
+                return { baseBudget, feePercentage, feeAmount, commission, totalAmount, totalHours };
             },
             handleSaveJob: (e) => {
                 e.preventDefault();
                 
-                const budget = parseFloat(document.getElementById('job-budget').value);
+                const hourlyRate = parseFloat(document.getElementById('job-hourly-rate').value);
                 const category = document.getElementById('job-category').value;
-                const minRate = MINIMUM_RATES[category] || 0;
+                const minRate = MINIMUM_HOURLY_RATES[category] || 0;
 
-                if (budget < minRate) {
-                    notifications.showToast(`The budget for '${category.replace(/-/g, ' ')}' must be at least ZAR ${minRate.toFixed(2)} per day.`);
+                if (hourlyRate < minRate) {
+                    notifications.showToast(`The hourly rate for '${category.replace(/-/g, ' ')}' must be at least ZAR ${minRate.toFixed(2)}.`);
                     return; 
                 }
 
@@ -2596,7 +2746,7 @@
                     const endTime = document.getElementById('job-end-time').value;
                     const positions = parseInt(document.getElementById('job-positions').value, 10);
                     
-                    const newDetails = handlers.calculateUrgencyFee(startTime, budget, positions, endTime);
+                    const newDetails = handlers.calculateUrgencyFee(startTime, hourlyRate, positions, endTime);
                     const newTotal = newDetails.totalAmount;
                     const costDifference = newTotal - originalTotal;
 
@@ -2618,8 +2768,8 @@
                             contact: document.getElementById('job-contact-person').value,
                         },
                         category: document.getElementById('job-category').value,
-                        budget: budget,
-                        days: newDetails.days,
+                        hourlyRate: hourlyRate,
+                        totalHours: newDetails.totalHours,
                         urgencyFee: newDetails.feeAmount,
                         totalBudget: newDetails.totalAmount,
                         location: {
@@ -2643,7 +2793,7 @@
                 ui.render();
             },
             handlePostJob: (e) => {
-                const budget = parseFloat(document.getElementById('job-budget').value);
+                const hourlyRate = parseFloat(document.getElementById('job-hourly-rate').value);
                 const startTime = document.getElementById('job-start-time').value;
                 const endTime = document.getElementById('job-end-time').value;
                 const positions = parseInt(document.getElementById('job-positions').value, 10);
@@ -2657,7 +2807,7 @@
                     return;
                 }
 
-                const feeDetails = handlers.calculateUrgencyFee(startTime, budget, positions, endTime);
+                const feeDetails = handlers.calculateUrgencyFee(startTime, hourlyRate, positions, endTime);
 
                 if (state.currentUser.wallet < feeDetails.totalAmount) {
                     notifications.showToast(`Insufficient funds. You need ZAR ${feeDetails.totalAmount.toFixed(2)} but only have ZAR ${state.currentUser.wallet.toFixed(2)}.`);
@@ -2678,8 +2828,8 @@
                         contact: document.getElementById('job-contact-person').value,
                     },
                     category: document.getElementById('job-category').value,
-                    budget: budget,
-                    days: feeDetails.days,
+                    hourlyRate: hourlyRate,
+                    totalHours: feeDetails.totalHours,
                     urgencyFee: feeDetails.feeAmount,
                     totalBudget: feeDetails.totalAmount,
                     location: {
@@ -2731,7 +2881,7 @@
                 document.getElementById('job-briefing').value = job.briefing || '';
                 document.getElementById('job-contact-person').value = job.description.contact;
                 document.getElementById('job-category').value = job.category;
-                document.getElementById('job-budget').value = job.budget;
+                document.getElementById('job-hourly-rate').value = job.hourlyRate;
                 document.getElementById('job-positions').value = job.positionsNeeded;
 
                 // Helper function to format date for datetime-local input
@@ -3156,8 +3306,7 @@
                 job.assignedFreelancers.forEach(fId => {
                     const freelancer = state.db.users.find(u => u.id === fId);
                     if (freelancer) {
-                        const jobDays = job.days || 1;
-                        const payoutAmount = job.budget * jobDays;
+                        const payoutAmount = job.hourlyRate * job.totalHours;
                         const updates = {
                             wallet: freelancer.wallet + payoutAmount,
                             reliabilityScore: (freelancer.reliabilityScore || 100) + 5,
@@ -3182,7 +3331,7 @@
                 });
 
                 // Pay platform
-                const totalFreelancerCost = job.budget * job.assignedFreelancers.length * (job.days || 1);
+                const totalFreelancerCost = job.hourlyRate * job.totalHours * job.assignedFreelancers.length;
                 const platformCommission = totalFreelancerCost * PLATFORM_COMMISSION;
                 const platformTotalEarnings = platformCommission + job.urgencyFee;
                 state.db.platformWallet += platformTotalEarnings;
@@ -3327,12 +3476,13 @@
                 const job = state.db.jobs.find(j => j.id === jobId);
                 const user = state.currentUser;
                 let message = '';
-                
+                const totalJobValue = job.hourlyRate * job.totalHours;
+
                 if (user.role === 'freelancer') {
-                    const penalty = (job.budget * 0.25).toFixed(2);
+                    const penalty = (totalJobValue * 0.25).toFixed(2);
                     message = `You will be charged a ZAR ${penalty} penalty and your Reliability Score will decrease. Do you wish to proceed?`;
                 } else if (user.role === 'client') {
-                    const penaltyPerPerson = (job.budget * 0.50).toFixed(2);
+                    const penaltyPerPerson = (totalJobValue * 0.50).toFixed(2);
                     const totalPenalty = (penaltyPerPerson * job.assignedFreelancers.length).toFixed(2);
                     message = `You will pay a ZAR ${penaltyPerPerson} fee to each of the ${job.assignedFreelancers.length} hired freelancer(s), for a total of ZAR ${totalPenalty}. Do you wish to proceed?`;
                 }
@@ -3347,10 +3497,11 @@
                 if (jobIndex === -1) return;
                 const job = state.db.jobs[jobIndex];
                 const user = state.currentUser;
+                const totalJobValue = job.hourlyRate * job.totalHours;
 
                 if (user.role === 'freelancer') {
                     // Freelancer cancels their own assignment
-                    const penalty = job.budget * 0.25;
+                    const penalty = totalJobValue * 0.25;
                     auth.updateUser(user.id, { 
                         wallet: user.wallet - penalty,
                         reliabilityScore: (user.reliabilityScore || 100) - 25,
@@ -3367,7 +3518,7 @@
 
                 } else if (user.role === 'client') {
                     // Client cancels the entire job
-                    const penaltyPerPerson = job.budget * 0.50;
+                    const penaltyPerPerson = totalJobValue * 0.50;
                     const totalPenalty = penaltyPerPerson * job.assignedFreelancers.length;
 
                     if (user.wallet < totalPenalty) {
@@ -3466,7 +3617,7 @@
                             <h4>Job Details</h4>
                             <p><strong>Title:</strong> ${job.title}</p>
                             <p><strong>Status:</strong> ${job.status}</p>
-                            <p><strong>Budget:</strong> ZAR ${job.budget.toFixed(2)} x ${job.days} day(s)</p>
+                            <p><strong>Rate:</strong> ZAR ${job.hourlyRate.toFixed(2)}/hr for ${job.totalHours.toFixed(1)} hours</p>
                         </div>
                         <div class="card">
                             <h4>Participants</h4>
@@ -3515,7 +3666,7 @@
                     case 'favor_freelancer':
                         // For simplicity, we'll assume a full payout if in favor of freelancer
                         handlers.handlePayment(job.id); // Re-use payment logic
-                        resolutionMessage = `Resolved in favor of the freelancer. Payment of ZAR ${job.budget.toFixed(2)} processed.`;
+                        resolutionMessage = `Resolved in favor of the freelancer. Payment of ZAR ${(job.hourlyRate * job.totalHours).toFixed(2)} processed.`;
                         dispute.status = 'resolved_freelancer';
                         break;
                     case 'favor_client':
